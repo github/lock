@@ -196,7 +196,21 @@ export async function prechecks(
     core.info(`Could not retrieve PR commit status: ${e} - Handled: OK`)
     core.info('Skipping commit status check and proceeding...')
     commitStatus = null
+
+    // Try to display the raw GraphQL result for debugging purposes
+    try {
+      core.debug('raw graphql result for debugging:')
+      core.debug(result)
+    } catch {
+      // istanbul ignore next
+      core.debug(
+        'Could not output raw graphql result for debugging - This is bad'
+      )
+    }
   }
+
+  // Get admin data
+  const userIsAdmin = await isAdmin(context)
 
   // Always allow deployments to the "stable" branch regardless of CI checks or PR review
   if (regexCommandWithStableBranch.test(comment)) {
@@ -280,9 +294,15 @@ export async function prechecks(
     core.info('note: noop deployments do not require pr review')
 
     // If CI is passing and the deployer is an admin
-  } else if (commitStatus === 'SUCCESS' && (await isAdmin(context)) === true) {
+  } else if (commitStatus === 'SUCCESS' && userIsAdmin === true) {
     message =
       '✔️ CI is passing and approval is bypassed due to admin rights - OK'
+    core.info(message)
+
+    // If CI is undefined and the deployer is an admin
+  } else if (commitStatus === null && userIsAdmin === true) {
+    message =
+      '✔️ CI checks have not been defined and approval is bypassed due to admin rights - OK'
     core.info(message)
 
     // If CI is pending and the PR has not been reviewed BUT it is a noop deploy
