@@ -30,9 +30,6 @@ export async function run() {
     const lock_info_alias = core.getInput('lock_info_alias')
     const lock_mode = core.getInput('mode')
 
-    // Get the body of the IssueOps command
-    const body = context.payload.comment.body.trim()
-
     // Get variables from the event context
     const {owner, repo} = context.repo
 
@@ -47,6 +44,9 @@ export async function run() {
       await unlock(octokit, context, null, true)
       return 'success - headless'
     }
+
+    // Get the body of the IssueOps command
+    const body = context.payload.comment.body.trim()
 
     // Check if the comment is a trigger and what type of trigger it is
     const isLock = await triggerCheck(prefixOnly, body, lock_trigger)
