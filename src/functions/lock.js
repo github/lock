@@ -146,6 +146,7 @@ export async function lock(
   // Attempt to obtain a reason from the context for the lock - either a string or null
   var reason
   if (headless) {
+    core.setOutput('headless', 'true')
     reason = null
   } else {
     reason = await findReason(context, sticky)

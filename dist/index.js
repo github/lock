@@ -10112,6 +10112,7 @@ async function lock(
   // Attempt to obtain a reason from the context for the lock - either a string or null
   var reason
   if (headless) {
+    core.setOutput('headless', 'true')
     reason = null
   } else {
     reason = await findReason(context, sticky)
@@ -10331,6 +10332,7 @@ async function unlock(octokit, context, reactionId, headless = false) {
       // If headless, exit here
       if (headless) {
         core.info('removing lock - headless mode')
+        core.setOutput('headless', 'true')
         return 'removed lock - headless'
       }
 

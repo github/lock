@@ -26,6 +26,7 @@ export async function unlock(octokit, context, reactionId, headless = false) {
       // If headless, exit here
       if (headless) {
         core.info('removing lock - headless mode')
+        core.setOutput('headless', 'true')
         return 'removed lock - headless'
       }
 
