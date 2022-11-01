@@ -10527,7 +10527,7 @@ async function run() {
             - __Created At__: \`${lockData.created_at}\`
             - __Created By__: \`${lockData.created_by}\`
             - __Sticky__: \`${lockData.sticky}\`
-            - __Comment Link__: [click here](${lockData.link})
+            - __Lock Set Link__: [click here](${lockData.link})
             - __Lock Link__: [click here](${main_BASE_URL}/${owner}/${repo}/blob/${main_LOCK_BRANCH}/${main_LOCK_FILE})
         
             The current lock has been active for \`${totalTime}\`
