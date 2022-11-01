@@ -10427,7 +10427,7 @@ async function run() {
     const lock_trigger = core.getInput('lock_trigger')
     const unlock_trigger = core.getInput('unlock_trigger')
     const lock_info_alias = core.getInput('lock_info_alias')
-    const headless = core.getInput('headless') === 'true' // if a string of 'true' gets set to a boolean of true
+    const lock_mode = core.getInput('mode')
 
     // Get the body of the IssueOps command
     const body = github.context.payload.comment.body.trim()
@@ -10438,17 +10438,13 @@ async function run() {
     // Create an octokit client
     const octokit = github.getOctokit(token)
 
-    // If the trigger is "headless" (i.e. no trigger), then we use headless mode
-    // headless in this context means that it was not invoked by a comment on an pull request
-    if (headless) {
-      core.debug('headless mode')
-      if (core.getInput('mode') === 'lock') {
-        await lock(octokit, github.context, null, null, null, false, true)
-        return 'success - headless'
-      } else if (core.getInput('mode') === 'unlock') {
-        await unlock(octokit, github.context, null, true)
-        return 'success - headless'
-      }
+    // Check to see if a headless lock mode was used
+    if (lock_mode === 'lock') {
+      await lock(octokit, github.context, null, null, null, false, true)
+      return 'success - headless'
+    } else if (lock_mode === 'unlock') {
+      await unlock(octokit, github.context, null, true)
+      return 'success - headless'
     }
 
     // Check if the comment is a trigger and what type of trigger it is
