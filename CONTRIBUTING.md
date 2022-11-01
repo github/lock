@@ -12,17 +12,3 @@ All contributions are welcome and greatly appreciated!
 6. Merge!
 
 The maintainers of this repository will create a new release with your changes so that everyone can use the new release and enjoy the awesome features of branch deployments
-
-## Testing 🧪
-
-This project requires **100%** test coverage
-
-### Running the test suite (suggested)
-
-Simply run the following command to execute the entire test suite:
-
-```bash
-npm run test
-```
-
-> Note: this requires that you have already run `npm install`
