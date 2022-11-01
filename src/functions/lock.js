@@ -147,7 +147,10 @@ export async function lock(
   var reason
   if (headless) {
     core.setOutput('headless', 'true')
-    reason = null
+    reason = core.getInput('reason')
+    if (reason === '' || reason === null || reason === undefined) {
+      reason = null
+    }
   } else {
     reason = await findReason(context, sticky)
   }
