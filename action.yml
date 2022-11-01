@@ -1,4 +1,4 @@
-name: "lock"
+name: "deploy-lock"
 description: "Lock Action to support deployment locking for the branch-deploy Action"
 author: "Grant Birkinbine"
 branding:
