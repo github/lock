@@ -15,22 +15,42 @@ const BASE_URL = 'https://github.com'
 // :param ref: The branch which requested the lock / deployment
 // :param reason: The reason for the deployment lock
 // :param sticky: A bool indicating whether the lock is sticky or not (should persist forever)
+// :param headless: A bool indicating whether the lock is being claimed from a headless run or not
 // :returns: The result of the createOrUpdateFileContents API call
-async function createLock(octokit, context, ref, reason, sticky, reactionId) {
+async function createLock(
+  octokit,
+  context,
+  ref,
+  reason,
+  sticky,
+  reactionId,
+  headless
+) {
   // Deconstruct the context to obtain the owner and repo
   const {owner, repo} = context.repo
+
+  var link
+  var branch
+  if (headless) {
+    sticky = true
+    link = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`
+    branch = 'headless mode'
+  } else {
+    link = `${BASE_URL}/${owner}/${repo}/pull/${context.issue.number}#issuecomment-${context.payload.comment.id}`
+    branch = ref
+  }
 
   // Construct the file contents for the lock file
   // Use the 'sticky' flag to determine whether the lock is sticky or not
   // Sticky locks will persist forever
-  // Non-sticky locks will be removed if the branch that claimed the lock is deleted / merged
+  // Non-sticky locks are removed after the deployment finishes
   const lockData = {
     reason: reason,
-    branch: ref,
+    branch: branch,
     created_at: new Date().toISOString(),
     created_by: context.actor,
     sticky: sticky,
-    link: `${BASE_URL}/${owner}/${repo}/pull/${context.issue.number}#issuecomment-${context.payload.comment.id}`
+    link: link
   }
 
   // Create the lock file
@@ -55,6 +75,12 @@ async function createLock(octokit, context, ref, reason, sticky, reactionId) {
 
     > This lock is _sticky_ and will persist until someone runs \`.unlock\`
     `)
+
+    // If headless, exit here
+    if (headless) {
+      core.info(comment)
+      return 'obtained lock - headless'
+    }
 
     // If the lock is sticky, this means that it was invoked with `.lock` and not from a deployment
     // In this case, we update the actionStatus as we are about to exit
@@ -106,6 +132,7 @@ async function findReason(context, sticky) {
 // :param reactionId: The ID of the reaction to add to the issue comment (use if the lock is already claimed or if we claimed it with 'sticky')
 // :param sticky: A bool indicating whether the lock is sticky or not (should persist forever)
 // :param detailsOnly: A bool indicating whether to only return the details of the lock and not alter its state
+// :param headless: A bool indicating whether the lock is being claimed from a headless run or not
 // :returns: true if the lock was successfully claimed, false if already locked or it fails, 'owner' if the requestor is the one who owns the lock, or null if this is a detailsOnly request and the lock was not found
 export async function lock(
   octokit,
@@ -113,10 +140,16 @@ export async function lock(
   ref,
   reactionId,
   sticky,
-  detailsOnly = false
+  detailsOnly = false,
+  headless = false
 ) {
   // Attempt to obtain a reason from the context for the lock - either a string or null
-  const reason = await findReason(context, sticky)
+  var reason
+  if (headless) {
+    reason = null
+  } else {
+    reason = await findReason(context, sticky)
+  }
 
   // Check if the lock branch already exists
   try {
@@ -153,7 +186,15 @@ export async function lock(
       core.info(`Created lock branch: ${LOCK_BRANCH}`)
 
       // Create the lock file
-      await createLock(octokit, context, ref, reason, sticky, reactionId)
+      await createLock(
+        octokit,
+        context,
+        ref,
+        reason,
+        sticky,
+        reactionId,
+        headless
+      )
       return true
     }
   }
@@ -197,6 +238,12 @@ export async function lock(
 
           > If you need to release the lock, please comment \`.unlock\`
           `)
+
+        // If headless, exit here
+        if (headless) {
+          core.info(youOwnItComment)
+          return 'owner - headless'
+        }
 
         await actionStatus(
           context,
@@ -249,6 +296,12 @@ export async function lock(
     > If you need to release the lock, please comment \`.unlock\`
     `)
 
+    // If headless is true, just return the comment and false
+    if (headless) {
+      core.info(comment)
+      return false
+    }
+
     // Set the action status with the comment
     await actionStatus(context, octokit, reactionId, comment)
 
@@ -266,7 +319,15 @@ export async function lock(
         return null
       }
 
-      await createLock(octokit, context, ref, reason, sticky, reactionId)
+      await createLock(
+        octokit,
+        context,
+        ref,
+        reason,
+        sticky,
+        reactionId,
+        headless
+      )
       return true
     }
 
