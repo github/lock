@@ -77,6 +77,10 @@ name: "lock"
 
 on:
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for claiming the deployment lock for this reponsitory'
+        required: false
 
 permissions:
   pull-requests: write
@@ -86,11 +90,15 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
+      # Need to checkout for testing the Action in this repo
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # pin@v3.0.2
+
       # Lock
       - uses: GrantBirki/lock@vX.X.X
         id: lock
         with:
           mode: "lock"
+          reason: ${{ github.event.inputs.reason }}
 ```
 
 ### Removing a Lock via a Workflow Dispatch Event

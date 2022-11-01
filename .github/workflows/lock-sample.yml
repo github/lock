@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  sample:
+  lock:
     runs-on: ubuntu-latest
     steps:
       # Need to checkout for testing the Action in this repo
