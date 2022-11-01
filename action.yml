@@ -17,6 +17,10 @@ inputs:
     description: 'The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock"'
     required: false
     default: ".unlock"
+  reaction:
+    description: 'If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes"'
+    required: false
+    default: "eyes"
   lock_info_alias:
     description: 'An alias or shortcut to get details about the current lock (if it exists) Example: ".info"'
     required: false
