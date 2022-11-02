@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GrantBirki/lock.git"
+    "url": "git+https://github.com/github/lock.git"
   },
   "keywords": [
     "actions",

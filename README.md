@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Lock or Unlock via a comment (ex: .lock or .unlock)
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
 ```
 
@@ -94,7 +94,7 @@ jobs:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # pin@v3.0.2
 
       # Lock
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
         with:
           mode: "lock"
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Unlock
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
         with:
           mode: "unlock"
@@ -143,7 +143,7 @@ jobs:
       # if something occurs, set the lock below
 
       # Unlock
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
         with:
           mode: "lock"
