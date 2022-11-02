@@ -1,4 +1,4 @@
-name: "lock"
+name: lock
 
 on:
   workflow_dispatch:
@@ -8,7 +8,6 @@ on:
         required: false
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:

@@ -73,7 +73,7 @@ jobs:
 ### Setting a Lock via a Workflow Dispatch Event
 
 ```yaml
-name: "lock"
+name: lock
 
 on:
   workflow_dispatch:
@@ -83,7 +83,6 @@ on:
         required: false
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:
@@ -104,13 +103,12 @@ jobs:
 ### Removing a Lock via a Workflow Dispatch Event
 
 ```yaml
-name: "unlock"
+name: unlock
 
 on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:
@@ -127,12 +125,11 @@ jobs:
 ### Setting a Lock Conditionally (basic example)
 
 ```yaml
-name: "lock (basic example)"
+name: lock (basic example)
 
 # on: (some event)
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:

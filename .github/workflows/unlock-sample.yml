@@ -1,10 +1,9 @@
-name: "unlock"
+name: unlock
 
 on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:
