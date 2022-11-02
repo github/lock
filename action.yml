@@ -33,7 +33,7 @@ inputs:
     description: 'The mode to use "lock" or "unlock". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock'
     required: false
   reason:
-    description: Reason for claiming the deployment lock for this reponsitory
+    description: Reason for claiming the deployment lock for this repository
     required: false
 outputs:
   triggered:
