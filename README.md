@@ -79,7 +79,7 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for claiming the deployment lock for this reponsitory'
+        description: 'Reason for claiming the deployment lock for this repository'
         required: false
 
 permissions:
