@@ -66,14 +66,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Lock or Unlock via a comment (ex: .lock or .unlock)
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
 ```
 
 ### Setting a Lock via a Workflow Dispatch Event
 
 ```yaml
-name: "lock"
+name: lock
 
 on:
   workflow_dispatch:
@@ -83,7 +83,6 @@ on:
         required: false
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:
@@ -94,7 +93,7 @@ jobs:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # pin@v3.0.2
 
       # Lock
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
         with:
           mode: "lock"
@@ -104,13 +103,12 @@ jobs:
 ### Removing a Lock via a Workflow Dispatch Event
 
 ```yaml
-name: "unlock"
+name: unlock
 
 on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:
@@ -118,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Unlock
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
         with:
           mode: "unlock"
@@ -127,12 +125,11 @@ jobs:
 ### Setting a Lock Conditionally (basic example)
 
 ```yaml
-name: "lock (basic example)"
+name: lock (basic example)
 
 # on: (some event)
 
 permissions:
-  pull-requests: write
   contents: write
 
 jobs:
@@ -143,7 +140,7 @@ jobs:
       # if something occurs, set the lock below
 
       # Unlock
-      - uses: GrantBirki/lock@vX.X.X
+      - uses: github/lock@vX.X.X
         id: lock
         with:
           mode: "lock"
