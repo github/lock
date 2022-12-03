@@ -10423,7 +10423,7 @@ async function check(octokit, context) {
     // If the lock file doesn't exist, return
     if (error.status === 404) {
       core.info(NO_LOCK)
-      core.saveState('locked', 'false')
+      core.setOutput('locked', 'false')
       return false
     }
   }
@@ -10446,7 +10446,7 @@ async function check(octokit, context) {
     if (lockData !== null && lockData !== undefined) {
       // Set locked to true if the lock file exists
       core.info(FOUND_LOCK)
-      core.saveState('locked', 'true')
+      core.setOutput('locked', 'true')
       return true
     }
 
@@ -10454,13 +10454,13 @@ async function check(octokit, context) {
     core.warning(
       'lock file and branch exist, but lock file cannot be decoded - setting locked to false'
     )
-    core.saveState('locked', 'false')
+    core.setOutput('locked', 'false')
     return false
   } catch (error) {
     // If the lock file doesn't exist, return false
     if (error.status === 404) {
       core.info(NO_LOCK)
-      core.saveState('locked', 'false')
+      core.setOutput('locked', 'false')
       return false
     }
 
