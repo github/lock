@@ -29,7 +29,7 @@ This section goes into detail on how you can use this Action in your own workflo
 | unlock_trigger | no | .unlock | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
 | lock_info_alias | no | .wcid | An alias or shortcut to get details about the current lock (if it exists) Example: ".info" - Hubbers will find the ".wcid" default helpful ("where can I deploy") |
 | prefix_only | no | true | If "false", the trigger can match anywhere in the comment |
-| mode | no | - | The mode to use "lock" or "unlock". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
+| mode | no | - | The mode to use "lock", "unlock", or "check". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
 
 ### About the `mode` Input
 
@@ -42,6 +42,7 @@ If you wish to use this Action via a comment on a pull request, simply omit the 
 | triggered | The string "true" if the trigger was found, otherwise the string "false" |
 | comment_id | The comment id which triggered this deployment |
 | headless | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
+| locked | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
 
 ## Examples 📖
 
@@ -144,4 +145,29 @@ jobs:
         id: lock
         with:
           mode: "lock"
+```
+
+### Checking if a Lock is Set (basic example) - headless
+
+```yaml
+name: lock-check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lock-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: github/lock@vX.X.X
+        id: lock
+        with:
+          mode: check
+
+      - name: Print lock status
+        run: |
+          echo "Lock status: ${{ steps.lock.outputs.locked }}"
 ```
