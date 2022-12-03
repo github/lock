@@ -146,3 +146,28 @@ jobs:
         with:
           mode: "lock"
 ```
+
+### Checking if a Lock is Set (basic example) - headless
+
+```yaml
+name: lock-check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lock-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: github/lock@vX.X.X
+        id: lock
+        with:
+          mode: check
+
+      - name: Print lock status
+        run: |
+          echo "Lock status: ${{ steps.lock.outputs.locked }}"
+```
