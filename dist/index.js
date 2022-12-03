@@ -10405,6 +10405,8 @@ async function unlock(octokit, context, reactionId, headless = false) {
 // Constants for the lock file
 const check_LOCK_BRANCH = 'branch-deploy-lock'
 const check_LOCK_FILE = 'lock.json'
+const NO_LOCK = 'lock does not exist'
+const FOUND_LOCK = 'lock exists'
 
 // Helper function for checking if a deployment lock exists
 // :param octokit: The octokit client
@@ -10420,6 +10422,7 @@ async function check(octokit, context) {
   } catch (error) {
     // If the lock file doesn't exist, return
     if (error.status === 404) {
+      core.info(NO_LOCK)
       core.saveState('locked', 'false')
       return false
     }
@@ -10442,16 +10445,21 @@ async function check(octokit, context) {
     // If the lock file exists, and can be decoded, return true
     if (lockData !== null && lockData !== undefined) {
       // Set locked to true if the lock file exists
+      core.info(FOUND_LOCK)
       core.saveState('locked', 'true')
       return true
     }
 
     // If we get here, the lock file may exist but it cannot be decoded
+    core.warning(
+      'lock file and branch exist, but lock file cannot be decoded - setting locked to false'
+    )
     core.saveState('locked', 'false')
     return false
   } catch (error) {
     // If the lock file doesn't exist, return false
     if (error.status === 404) {
+      core.info(NO_LOCK)
       core.saveState('locked', 'false')
       return false
     }

@@ -49,7 +49,9 @@ export async function check(octokit, context) {
     }
 
     // If we get here, the lock file may exist but it cannot be decoded
-    core.warning('lock file and branch exist, but lock file cannot be decoded - setting locked to false')
+    core.warning(
+      'lock file and branch exist, but lock file cannot be decoded - setting locked to false'
+    )
     core.saveState('locked', 'false')
     return false
   } catch (error) {
