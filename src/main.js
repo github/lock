@@ -5,6 +5,7 @@ import {actionStatus} from './functions/action-status'
 import {validPermissions} from './functions/valid-permissions'
 import {lock} from './functions/lock'
 import {unlock} from './functions/unlock'
+import {check} from './functions/check'
 import {timeDiff} from './functions/time-diff'
 import * as github from '@actions/github'
 import {context} from '@actions/github'
@@ -42,6 +43,9 @@ export async function run() {
       return 'success - headless'
     } else if (lock_mode === 'unlock') {
       await unlock(octokit, context, null, true)
+      return 'success - headless'
+    } else if (lock_mode === 'check') {
+      await check(octokit, context)
       return 'success - headless'
     }
 
