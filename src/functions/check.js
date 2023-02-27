@@ -45,6 +45,11 @@ export async function check(octokit, context) {
       // Set locked to true if the lock file exists
       core.info(FOUND_LOCK)
       core.setOutput('locked', 'true')
+
+      if (Object.prototype.hasOwnProperty.call(lockData, 'branch')) {
+        core.setOutput('branch', lockData['branch'])
+      }
+
       return true
     }
 
