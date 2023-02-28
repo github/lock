@@ -19,8 +19,10 @@
   },
   "keywords": [
     "actions",
-    "node",
-    "setup"
+    "branch-deploy",
+    "lock",
+    "unlock",
+    "deployment"
   ],
   "author": "Grant Birkinbine",
   "license": "MIT",
