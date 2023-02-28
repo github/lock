@@ -43,6 +43,7 @@ If you wish to use this Action via a comment on a pull request, simply omit the 
 | comment_id | The comment id which triggered this deployment |
 | headless | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
 | locked | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
+| branch | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
 
 ## Examples 📖
 

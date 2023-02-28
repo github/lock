@@ -44,6 +44,8 @@ outputs:
     description: 'The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request'
   locked:
     description: 'If the mode is set to "check", this output will be "true" if a lock exists, otherwise "false"'
+  branch:
+    description: 'If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty'
 runs:
   using: "node16"
   main: "dist/index.js"
