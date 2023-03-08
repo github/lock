@@ -15,6 +15,7 @@ beforeEach(() => {
   })
   jest.spyOn(core, 'info').mockImplementation(() => {})
   jest.spyOn(core, 'debug').mockImplementation(() => {})
+  jest.spyOn(core, 'setOutput').mockImplementation(() => {})
 })
 
 const context = {
@@ -63,14 +64,17 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
       }
     }
   }
-  expect(await unlock(badHttpOctokitMock, context, 123, true)).toBe(
-    'failed to delete lock (bad status code) - headless'
-  )
+
   expect(octokit.rest.git.deleteRef).toHaveBeenCalledWith({
     owner: 'corp',
     repo: 'test',
     ref: 'heads/branch-deploy-lock'
   })
+
+  await expect(unlock(badHttpOctokitMock, context, 123, true)).rejects.toThrow(
+    'Error: failed to delete lock branch: branch-deploy-lock - HTTP: 500'
+  )
+  
 })
 
 test('throws an error if an unhandled exception occurs - headless mode', async () => {
@@ -111,12 +115,16 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
       }
     }
   }
-  expect(await unlock(badHttpOctokitMock, context, 123)).toBe(false)
+
   expect(octokit.rest.git.deleteRef).toHaveBeenCalledWith({
     owner: 'corp',
     repo: 'test',
     ref: 'heads/branch-deploy-lock'
   })
+  
+  await expect(unlock(badHttpOctokitMock, context, 123)).rejects.toThrow(
+    'Error: failed to delete lock branch: branch-deploy-lock - HTTP: 500'
+  )
 })
 
 test('Does not find a deployment lock branch so it lets the user know', async () => {
