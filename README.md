@@ -1,5 +1,7 @@
 # lock 🔒
 
+[![package-check](https://github.com/github/lock/actions/workflows/package-check.yml/badge.svg)](https://github.com/github/lock/actions/workflows/package-check.yml) [![CodeQL](https://github.com/github/lock/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/github/lock/actions/workflows/codeql-analysis.yml)
+
 A standalone deployment locking Action to prevent multiple deployments from running at the same time
 
 > If you came here from the [github/branch-deploy](https://github.com/github/branch-deploy) Action, you are in the right place!
