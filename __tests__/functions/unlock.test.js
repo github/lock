@@ -76,7 +76,7 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
   await expect(unlock(badHttpOctokitMock, context, 123, true)).rejects.toThrow(
     'Error: failed to delete lock branch: branch-deploy-lock - HTTP: 500'
   )
-  
+
   expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
 
@@ -124,7 +124,7 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
     repo: 'test',
     ref: 'heads/branch-deploy-lock'
   })
-  
+
   await expect(unlock(badHttpOctokitMock, context, 123)).rejects.toThrow(
     'Error: failed to delete lock branch: branch-deploy-lock - HTTP: 500'
   )

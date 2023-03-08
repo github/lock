@@ -323,7 +323,9 @@ test('Determines that the lock request is coming from current owner of the lock 
       }
     }
   }
-  expect(await lock(octokit, context, null, null, true, false, true)).toBe('owner - headless')
+  expect(await lock(octokit, context, null, null, true, false, true)).toBe(
+    'owner - headless'
+  )
   expect(infoMock).toHaveBeenCalledWith('monalisa is the owner of the lock')
   expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })

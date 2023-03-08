@@ -10547,6 +10547,10 @@ async function run() {
       core.setOutput('type', 'unlock')
     } else if (isLockInfoAlias) {
       core.setOutput('type', 'lock-info-alias')
+    } else {
+      core.debug('No trigger found')
+      core.setOutput('triggered', 'false')
+      return 'safe-exit'
     }
 
     // If we made it this far, the action has been triggered in one manner or another
@@ -10678,6 +10682,7 @@ async function run() {
     core.saveState('bypass', 'true')
     core.error(error.stack)
     core.setFailed(error.message)
+    return 'failure'
   }
 }
 
