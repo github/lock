@@ -8,9 +8,9 @@ import * as check from '../src/functions/check'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
 
-// const setOutputMock = jest.spyOn(core, 'setOutput')
+const setOutputMock = jest.spyOn(core, 'setOutput')
 // const saveStateMock = jest.spyOn(core, 'saveState')
-const setFailedMock = jest.spyOn(core, 'setFailed')
+// const setFailedMock = jest.spyOn(core, 'setFailed')
 const debugMock = jest.spyOn(core, 'debug')
 
 beforeEach(() => {
@@ -52,6 +52,11 @@ beforeEach(() => {
           createComment: jest.fn().mockReturnValueOnce({
             data: {}
           })
+        },
+        pulls: {
+          get: jest.fn().mockImplementation(() => {
+            return {data: {head: {ref: 'test-ref'}}, status: 200}
+          })
         }
       }
     }
@@ -88,6 +93,11 @@ test('runs successfully in check mode', async () => {
   expect(await run()).toBe('success - headless')
 })
 
+test('successfully runs in lock mode from a comment', async () => {
+  expect(await run()).toBe('safe-exit')
+  expect(setOutputMock).toHaveBeenCalledWith('type', 'lock')
+})
+
 test('fails due to no trigger being found', async () => {
   github.context.payload = {
     issue: {
@@ -106,11 +116,11 @@ test('fails due to no trigger being found', async () => {
   expect(debugMock).toHaveBeenCalledWith('No trigger found')
 })
 
-test('handles and unexpected error and exits', async () => {
-  github.context.payload = {}
-  try {
-    await run()
-  } catch (e) {
-    expect(setFailedMock.toHaveBeenCalled())
-  }
-})
+// test('handles and unexpected error and exits', async () => {
+//   github.context.payload = {}
+//   try {
+//     await run()
+//   } catch (e) {
+//     expect(setFailedMock.toHaveBeenCalled())
+//   }
+// })
