@@ -18,12 +18,14 @@ const lockBase64Octocat =
 const saveStateMock = jest.spyOn(core, 'saveState')
 const setFailedMock = jest.spyOn(core, 'setFailed')
 const infoMock = jest.spyOn(core, 'info')
+const setOutputMock = jest.spyOn(core, 'setOutput')
 
 beforeEach(() => {
   jest.clearAllMocks()
   jest.spyOn(core, 'setFailed').mockImplementation(() => {})
   jest.spyOn(core, 'saveState').mockImplementation(() => {})
   jest.spyOn(core, 'info').mockImplementation(() => {})
+  jest.spyOn(core, 'setOutput').mockImplementation(() => {})
 })
 
 const context = {
@@ -68,6 +70,33 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: branch-deploy-lock'
   )
+})
+
+test('successfully obtains a deployment lock (non-sticky) by creating the branch and lock file in headless mode', async () => {
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        createOrUpdateFileContents: jest.fn().mockReturnValue({})
+      },
+      git: {
+        createRef: jest.fn().mockReturnValue({status: 201})
+      },
+      issues: {
+        createComment: jest.fn().mockReturnValue({})
+      }
+    }
+  }
+
+  expect(await lock(octokit, context, null, null, null, false, true)).toBe(true)
+  expect(infoMock).toHaveBeenCalledWith(
+    'Created lock branch: branch-deploy-lock'
+  )
+  expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
 
 test('Determines that another user has the lock and exits - during a lock claim on deployment', async () => {
