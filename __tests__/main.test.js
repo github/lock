@@ -57,6 +57,14 @@ beforeEach(() => {
           get: jest.fn().mockImplementation(() => {
             return {data: {head: {ref: 'test-ref'}}, status: 200}
           })
+        },
+        reactions: {
+          createForIssueComment: jest.fn().mockReturnValueOnce({
+            data: {}
+          }),
+          deleteForIssueComment: jest.fn().mockReturnValueOnce({
+            data: {}
+          })
         }
       }
     }
@@ -96,6 +104,39 @@ test('runs successfully in check mode', async () => {
 test('successfully runs in lock mode from a comment', async () => {
   expect(await run()).toBe('safe-exit')
   expect(setOutputMock).toHaveBeenCalledWith('type', 'lock')
+})
+
+test('successfully runs in unlock mode from a comment', async () => {
+  github.context.payload = {
+    issue: {
+      number: 123
+    },
+    comment: {
+      body: '.unlock',
+      id: 123,
+      user: {
+        login: 'monalisa'
+      }
+    }
+  }
+  expect(await run()).toBe('safe-exit')
+  expect(setOutputMock).toHaveBeenCalledWith('type', 'unlock')
+})
+
+test('successfully runs in lock info mode from a comment', async () => {
+  github.context.payload = {
+    issue: {
+      number: 123
+    },
+    comment: {
+      body: '.wcid',
+      id: 123,
+      user: {
+        login: 'monalisa'
+      }
+    }
+  }
+  expect(await run()).toBe('safe-exit')
 })
 
 test('fails due to no trigger being found', async () => {
