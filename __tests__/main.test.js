@@ -7,6 +7,7 @@ import * as check from '../src/functions/check'
 // import * as actionStatus from '../src/functions/action-status'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
+import {expect} from '@jest/globals'
 
 const setOutputMock = jest.spyOn(core, 'setOutput')
 // const saveStateMock = jest.spyOn(core, 'saveState')
@@ -139,6 +140,33 @@ test('successfully runs in lock info mode from a comment', async () => {
   expect(await run()).toBe('safe-exit')
 })
 
+test('successfully runs in lock info mode from a comment and finds no lock', async () => {
+  github.context.payload = {
+    issue: {
+      number: 123
+    },
+    comment: {
+      body: '.wcid',
+      id: 123,
+      user: {
+        login: 'monalisa'
+      }
+    }
+  }
+  jest.spyOn(lock, 'lock').mockImplementation(() => {
+    return null
+  })
+  expect(await run()).toBe('safe-exit')
+})
+
+test('successfully runs in lock mode from a comment and fails permissions', async () => {
+  jest.spyOn(validPermissions, 'validPermissions').mockImplementation(() => {
+    return false
+  })
+  expect(await run()).toBe('failure')
+  expect(setOutputMock).toHaveBeenCalledWith('type', 'lock')
+})
+
 test('fails due to no trigger being found', async () => {
   github.context.payload = {
     issue: {
@@ -157,11 +185,13 @@ test('fails due to no trigger being found', async () => {
   expect(debugMock).toHaveBeenCalledWith('No trigger found')
 })
 
-// test('handles and unexpected error and exits', async () => {
-//   github.context.payload = {}
-//   try {
-//     await run()
-//   } catch (e) {
-//     expect(setFailedMock.toHaveBeenCalled())
-//   }
-// })
+test('it handles an error', async () => {
+  github.context.payload = {}
+  try {
+    await run()
+  } catch (e) {
+    expect(e.message).toBe(
+      "Cannot read properties of undefined (reading 'body')"
+    )
+  }
+})

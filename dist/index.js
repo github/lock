@@ -10677,6 +10677,7 @@ async function run() {
       return 'safe-exit'
     }
 
+    /* istanbul ignore next */
     return 'success'
   } catch (error) {
     core.saveState('bypass', 'true')
