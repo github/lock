@@ -199,6 +199,7 @@ export async function run() {
     core.saveState('bypass', 'true')
     core.error(error.stack)
     core.setFailed(error.message)
+    return 'failure'
   }
 }
 
