@@ -169,6 +169,27 @@ test('Determines that another user has the lock and exits - during a direct lock
   )
 })
 
+test('Determines that another user has the lock and exits - headless', async () => {
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockReturnValue({data: {content: lockBase64Octocat}})
+      }
+    }
+  }
+  expect(await lock(octokit, context, ref, 123, true, false, true)).toBe(false)
+  // expect(saveStateMock).toHaveBeenCalledWith('bypass', 'true')
+  expect(infoMock).toHaveBeenCalledWith(
+    expect.stringMatching(/The current lock has been active/)
+  )
+})
+
 test('Request detailsOnly on the lock file and gets lock file data successfully', async () => {
   const octokit = {
     rest: {
@@ -286,6 +307,25 @@ test('Determines that the lock request is coming from current owner of the lock 
   }
   expect(await lock(octokit, context, ref, 123, true)).toBe('owner')
   expect(infoMock).toHaveBeenCalledWith('monalisa is the owner of the lock')
+})
+
+test('Determines that the lock request is coming from current owner of the lock and exits - headless', async () => {
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockReturnValue({data: {content: lockBase64Monalisa}})
+      }
+    }
+  }
+  expect(await lock(octokit, context, null, null, true, false, true)).toBe('owner - headless')
+  expect(infoMock).toHaveBeenCalledWith('monalisa is the owner of the lock')
+  expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
 
 test('Creates a lock when the lock branch exists but no lock file exists', async () => {
