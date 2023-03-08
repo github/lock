@@ -44,9 +44,9 @@ test('successfully releases a deployment lock with the unlock function', async (
   })
 })
 
-test('successfully releases a deployment lock with the unlock function - silent mode', async () => {
+test('successfully releases a deployment lock with the unlock function - headless mode', async () => {
   expect(await unlock(octokit, context, 123, true)).toBe(
-    'removed lock - silent'
+    'removed lock - headless'
   )
   expect(octokit.rest.git.deleteRef).toHaveBeenCalledWith({
     owner: 'corp',
@@ -55,7 +55,7 @@ test('successfully releases a deployment lock with the unlock function - silent 
   })
 })
 
-test('fails to release a deployment lock due to a bad HTTP code from the GitHub API - silent mode', async () => {
+test('fails to release a deployment lock due to a bad HTTP code from the GitHub API - headless mode', async () => {
   const badHttpOctokitMock = {
     rest: {
       git: {
@@ -64,7 +64,7 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
     }
   }
   expect(await unlock(badHttpOctokitMock, context, 123, true)).toBe(
-    'failed to delete lock (bad status code) - silent'
+    'failed to delete lock (bad status code) - headless'
   )
   expect(octokit.rest.git.deleteRef).toHaveBeenCalledWith({
     owner: 'corp',
@@ -73,7 +73,7 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
   })
 })
 
-test('throws an error if an unhandled exception occurs - silent mode', async () => {
+test('throws an error if an unhandled exception occurs - headless mode', async () => {
   const errorOctokitMock = {
     rest: {
       git: {
@@ -88,7 +88,7 @@ test('throws an error if an unhandled exception occurs - silent mode', async () 
   }
 })
 
-test('Does not find a deployment lock branch so it lets the user know - silent mode', async () => {
+test('Does not find a deployment lock branch so it lets the user know - headless mode', async () => {
   const noBranchOctokitMock = {
     rest: {
       git: {
@@ -99,7 +99,7 @@ test('Does not find a deployment lock branch so it lets the user know - silent m
     }
   }
   expect(await unlock(noBranchOctokitMock, context, 123, true)).toBe(
-    'no deployment lock currently set - silent'
+    'no deployment lock currently set - headless'
   )
 })
 
