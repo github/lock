@@ -68,6 +68,10 @@ export async function run() {
       core.setOutput('type', 'unlock')
     } else if (isLockInfoAlias) {
       core.setOutput('type', 'lock-info-alias')
+    } else {
+      core.debug('No trigger found')
+      core.setOutput('triggered', 'false')
+      return 'safe-exit'
     }
 
     // If we made it this far, the action has been triggered in one manner or another
