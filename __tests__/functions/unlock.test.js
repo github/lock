@@ -9,6 +9,8 @@ class NotFoundError extends Error {
   }
 }
 
+const setOutputMock = jest.spyOn(core, 'setOutput')
+
 beforeEach(() => {
   jest.spyOn(actionStatus, 'actionStatus').mockImplementation(() => {
     return undefined
@@ -75,6 +77,7 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
     'Error: failed to delete lock branch: branch-deploy-lock - HTTP: 500'
   )
   
+  expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
 
 test('throws an error if an unhandled exception occurs - headless mode', async () => {
@@ -125,6 +128,8 @@ test('fails to release a deployment lock due to a bad HTTP code from the GitHub 
   await expect(unlock(badHttpOctokitMock, context, 123)).rejects.toThrow(
     'Error: failed to delete lock branch: branch-deploy-lock - HTTP: 500'
   )
+
+  expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
 
 test('Does not find a deployment lock branch so it lets the user know', async () => {
