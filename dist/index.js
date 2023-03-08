@@ -9973,7 +9973,7 @@ async function timeDiff(firstDate, secondDate) {
 const LOCK_BRANCH = 'branch-deploy-lock'
 const LOCK_FILE = 'lock.json'
 const LOCK_COMMIT_MSG = 'lock'
-const BASE_URL = 'https://github.com'
+const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Helper function for creating a lock file for branch-deployment locks
 // :param octokit: The octokit client
@@ -10493,7 +10493,7 @@ var github = __nccwpck_require__(5438);
 // Lock constants
 const main_LOCK_BRANCH = 'branch-deploy-lock'
 const main_LOCK_FILE = 'lock.json'
-const main_BASE_URL = 'https://github.com'
+const main_BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Lock info flags
 const LOCK_INFO_FLAGS = ['--info', '--i', '-i', '-d', '--details', '--d']

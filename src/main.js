@@ -14,7 +14,7 @@ import dedent from 'dedent-js'
 // Lock constants
 const LOCK_BRANCH = 'branch-deploy-lock'
 const LOCK_FILE = 'lock.json'
-const BASE_URL = 'https://github.com'
+const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Lock info flags
 const LOCK_INFO_FLAGS = ['--info', '--i', '-i', '-d', '--details', '--d']
