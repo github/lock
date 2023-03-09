@@ -7,7 +7,7 @@ import {timeDiff} from './time-diff'
 const LOCK_BRANCH = 'branch-deploy-lock'
 const LOCK_FILE = 'lock.json'
 const LOCK_COMMIT_MSG = 'lock'
-const BASE_URL = 'https://github.com'
+const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Helper function for creating a lock file for branch-deployment locks
 // :param octokit: The octokit client

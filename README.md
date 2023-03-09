@@ -1,5 +1,7 @@
 # lock 🔒
 
+[![test](https://github.com/github/lock/actions/workflows/test.yml/badge.svg)](https://github.com/github/lock/actions/workflows/test.yml) [![lint](https://github.com/github/lock/actions/workflows/lint.yml/badge.svg)](https://github.com/github/lock/actions/workflows/lint.yml) [![package-check](https://github.com/github/lock/actions/workflows/package-check.yml/badge.svg)](https://github.com/github/lock/actions/workflows/package-check.yml) [![CodeQL](https://github.com/github/lock/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/github/lock/actions/workflows/codeql-analysis.yml)
+
 A standalone deployment locking Action to prevent multiple deployments from running at the same time
 
 > If you came here from the [github/branch-deploy](https://github.com/github/branch-deploy) Action, you are in the right place!
@@ -91,9 +93,6 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
-      # Need to checkout for testing the Action in this repo
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # pin@v3.0.2
-
       # Lock
       - uses: github/lock@vX.X.X
         id: lock

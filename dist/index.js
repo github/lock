@@ -9973,7 +9973,7 @@ async function timeDiff(firstDate, secondDate) {
 const LOCK_BRANCH = 'branch-deploy-lock'
 const LOCK_FILE = 'lock.json'
 const LOCK_COMMIT_MSG = 'lock'
-const BASE_URL = 'https://github.com'
+const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Helper function for creating a lock file for branch-deployment locks
 // :param octokit: The octokit client
@@ -10438,29 +10438,30 @@ async function check(octokit, context) {
     })
 
     // Decode the file contents to json
-    const lockData = JSON.parse(
-      Buffer.from(response.data.content, 'base64').toString()
-    )
-
-    // If the lock file exists, and can be decoded, return true
-    if (lockData !== null && lockData !== undefined) {
-      // Set locked to true if the lock file exists
-      core.info(FOUND_LOCK)
-      core.setOutput('locked', 'true')
-
-      if (Object.prototype.hasOwnProperty.call(lockData, 'branch')) {
-        core.setOutput('branch', lockData['branch'])
-      }
-
-      return true
+    var lockData
+    try {
+      lockData = JSON.parse(
+        Buffer.from(response.data.content, 'base64').toString()
+      )
+    } catch (error) {
+      core.warning(error.toString())
+      core.warning(
+        'lock file exists, but cannot be decoded - setting locked to false'
+      )
+      core.setOutput('locked', 'false')
+      return false
     }
 
-    // If we get here, the lock file may exist but it cannot be decoded
-    core.warning(
-      'lock file and branch exist, but lock file cannot be decoded - setting locked to false'
-    )
-    core.setOutput('locked', 'false')
-    return false
+    // If the lock file exists, and can be decoded, return true
+    // Set locked to true if the lock file exists
+    core.info(FOUND_LOCK)
+    core.setOutput('locked', 'true')
+
+    if (Object.prototype.hasOwnProperty.call(lockData, 'branch')) {
+      core.setOutput('branch', lockData['branch'])
+    }
+
+    return true
   } catch (error) {
     // If the lock file doesn't exist, return false
     if (error.status === 404) {
@@ -10493,7 +10494,7 @@ var github = __nccwpck_require__(5438);
 // Lock constants
 const main_LOCK_BRANCH = 'branch-deploy-lock'
 const main_LOCK_FILE = 'lock.json'
-const main_BASE_URL = 'https://github.com'
+const main_BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Lock info flags
 const LOCK_INFO_FLAGS = ['--info', '--i', '-i', '-d', '--details', '--d']
@@ -10547,6 +10548,10 @@ async function run() {
       core.setOutput('type', 'unlock')
     } else if (isLockInfoAlias) {
       core.setOutput('type', 'lock-info-alias')
+    } else {
+      core.debug('No trigger found')
+      core.setOutput('triggered', 'false')
+      return 'safe-exit'
     }
 
     // If we made it this far, the action has been triggered in one manner or another
@@ -10673,11 +10678,13 @@ async function run() {
       return 'safe-exit'
     }
 
+    /* istanbul ignore next */
     return 'success'
   } catch (error) {
     core.saveState('bypass', 'true')
     core.error(error.stack)
     core.setFailed(error.message)
+    throw error
   }
 }
 

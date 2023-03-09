@@ -14,7 +14,7 @@ import dedent from 'dedent-js'
 // Lock constants
 const LOCK_BRANCH = 'branch-deploy-lock'
 const LOCK_FILE = 'lock.json'
-const BASE_URL = 'https://github.com'
+const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Lock info flags
 const LOCK_INFO_FLAGS = ['--info', '--i', '-i', '-d', '--details', '--d']
@@ -68,6 +68,10 @@ export async function run() {
       core.setOutput('type', 'unlock')
     } else if (isLockInfoAlias) {
       core.setOutput('type', 'lock-info-alias')
+    } else {
+      core.debug('No trigger found')
+      core.setOutput('triggered', 'false')
+      return 'safe-exit'
     }
 
     // If we made it this far, the action has been triggered in one manner or another
@@ -194,11 +198,13 @@ export async function run() {
       return 'safe-exit'
     }
 
+    /* istanbul ignore next */
     return 'success'
   } catch (error) {
     core.saveState('bypass', 'true')
     core.error(error.stack)
     core.setFailed(error.message)
+    throw error
   }
 }
 
