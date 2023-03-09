@@ -1,6 +1,6 @@
 # lock 🔒
 
-[![package-check](https://github.com/github/lock/actions/workflows/package-check.yml/badge.svg)](https://github.com/github/lock/actions/workflows/package-check.yml) [![CodeQL](https://github.com/github/lock/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/github/lock/actions/workflows/codeql-analysis.yml)
+[![test](https://github.com/github/lock/actions/workflows/test.yml/badge.svg)](https://github.com/github/lock/actions/workflows/test.yml) [![lint](https://github.com/github/lock/actions/workflows/lint.yml/badge.svg)](https://github.com/github/lock/actions/workflows/lint.yml) [![package-check](https://github.com/github/lock/actions/workflows/package-check.yml/badge.svg)](https://github.com/github/lock/actions/workflows/package-check.yml) [![CodeQL](https://github.com/github/lock/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/github/lock/actions/workflows/codeql-analysis.yml)
 
 A standalone deployment locking Action to prevent multiple deployments from running at the same time
 
