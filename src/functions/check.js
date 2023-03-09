@@ -36,29 +36,30 @@ export async function check(octokit, context) {
     })
 
     // Decode the file contents to json
-    const lockData = JSON.parse(
-      Buffer.from(response.data.content, 'base64').toString()
-    )
-
-    // If the lock file exists, and can be decoded, return true
-    if (lockData !== null && lockData !== undefined) {
-      // Set locked to true if the lock file exists
-      core.info(FOUND_LOCK)
-      core.setOutput('locked', 'true')
-
-      if (Object.prototype.hasOwnProperty.call(lockData, 'branch')) {
-        core.setOutput('branch', lockData['branch'])
-      }
-
-      return true
+    var lockData
+    try {
+      lockData = JSON.parse(
+        Buffer.from(response.data.content, 'base64').toString()
+      )
+    } catch (error) {
+      core.warning(error.toString())
+      core.warning(
+        'lock file exists, but cannot be decoded - setting locked to false'
+      )
+      core.setOutput('locked', 'false')
+      return false
     }
 
-    // If we get here, the lock file may exist but it cannot be decoded
-    core.warning(
-      'lock file and branch exist, but lock file cannot be decoded - setting locked to false'
-    )
-    core.setOutput('locked', 'false')
-    return false
+    // If the lock file exists, and can be decoded, return true
+    // Set locked to true if the lock file exists
+    core.info(FOUND_LOCK)
+    core.setOutput('locked', 'true')
+
+    if (Object.prototype.hasOwnProperty.call(lockData, 'branch')) {
+      core.setOutput('branch', lockData['branch'])
+    }
+
+    return true
   } catch (error) {
     // If the lock file doesn't exist, return false
     if (error.status === 404) {
