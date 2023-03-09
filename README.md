@@ -93,9 +93,6 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
-      # Need to checkout for testing the Action in this repo
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # pin@v3.0.2
-
       # Lock
       - uses: github/lock@vX.X.X
         id: lock
