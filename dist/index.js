@@ -10531,10 +10531,23 @@ async function run() {
 
     // Check to see if a headless lock mode was used
     if (lock_mode === 'lock') {
-      await lock(octokit, github.context, null, null, null, false, true)
+      await lock(
+        octokit, // octokit client
+        github.context, // context object
+        null, // ref
+        null, // reactionId
+        false, // sticky
+        false, // detailsOnly
+        true // headless
+      )
       return 'success - headless'
     } else if (lock_mode === 'unlock') {
-      await unlock(octokit, github.context, null, true)
+      await unlock(
+        octokit, // octokit client
+        github.context, // context object
+        null, // reactionId
+        true // headless
+      )
       return 'success - headless'
     } else if (lock_mode === 'check') {
       await check(octokit, github.context)
@@ -10596,12 +10609,13 @@ async function run() {
     ) {
       // Get the lock details from the lock file
       const lockData = await lock(
-        octokit,
-        github.context,
-        null,
-        reactRes.data.id,
-        null,
-        true
+        octokit, // octokit client
+        github.context, // context object
+        null, // ref
+        reactRes.data.id, // reactionId
+        false, // sticky
+        true, // detailsOnly
+        false // headless
       )
 
       // If a lock was found when getting the lock details
@@ -10679,14 +10693,26 @@ async function run() {
     // If the request is a lock request, attempt to claim the lock with a sticky request with the logic below
     if (isLock) {
       // Send the lock request
-      const sticky = true
-      await lock(octokit, github.context, pr.data.head.ref, reactRes.data.id, sticky)
+      await lock(
+        octokit, // octokit client
+        github.context, // context object
+        pr.data.head.ref, // ref
+        reactRes.data.id, // reactionId
+        true, // sticky
+        false, // detailsOnly
+        false // headless
+      )
       return 'safe-exit'
     }
 
     // If the request is an unlock request, attempt to release the lock
     if (isUnlock) {
-      await unlock(octokit, github.context, reactRes.data.id)
+      await unlock(
+        octokit, // octokit client
+        github.context, // context object
+        reactRes.data.id, // reactionId
+        false // headless
+      )
       return 'safe-exit'
     }
 
