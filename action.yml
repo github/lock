@@ -40,6 +40,10 @@ outputs:
     description: 'The string "true" if the trigger was found, otherwise the string "false"'
   comment_id:
     description: The comment id which triggered this deployment (if it was not headless)
+  type:
+    description: The type of trigger which was found - 'lock', 'unlock', or 'info-info-alias'
+  comment_body:
+    description: The comment body which triggered this action (if it was not headless)
   headless:
     description: 'The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request'
   locked:

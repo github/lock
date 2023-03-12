@@ -43,6 +43,8 @@ If you wish to use this Action via a comment on a pull request, simply omit the 
 | ------ | ----------- |
 | triggered | The string "true" if the trigger was found, otherwise the string "false" |
 | comment_id | The comment id which triggered this deployment |
+| type | The type of trigger which was found - 'lock', 'unlock', or 'info-info-alias' |
+| comment_body | The comment body which triggered this action (if it was not headless) |
 | headless | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
 | locked | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
 | branch | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
