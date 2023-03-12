@@ -1,8 +1,9 @@
 import * as core from '@actions/core'
+import {LOCK_METADATA} from './lock-metadata'
 
 // Constants for the lock file
-const LOCK_BRANCH = 'branch-deploy-lock'
-const LOCK_FILE = 'lock.json'
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_FILE = LOCK_METADATA.lockFile
 const NO_LOCK = 'lock does not exist'
 const FOUND_LOCK = 'lock exists'
 

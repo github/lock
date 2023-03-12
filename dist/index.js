@@ -10413,9 +10413,10 @@ async function unlock(octokit, context, reactionId, headless = false) {
 ;// CONCATENATED MODULE: ./src/functions/check.js
 
 
+
 // Constants for the lock file
-const check_LOCK_BRANCH = 'branch-deploy-lock'
-const check_LOCK_FILE = 'lock.json'
+const check_LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const check_LOCK_FILE = LOCK_METADATA.lockFile
 const NO_LOCK = 'lock does not exist'
 const FOUND_LOCK = 'lock exists'
 
