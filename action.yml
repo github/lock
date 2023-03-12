@@ -25,6 +25,10 @@ inputs:
     description: 'An alias or shortcut to get details about the current lock (if it exists) Example: ".info"'
     required: false
     default: ".wcid"
+  global_lock_flag:
+    description: 'The flag to pass into the lock command to lock all environments. Example: "--global"'
+    required: false
+    default: "--global"
   prefix_only:
     description: 'If "false", the trigger can match anywhere in the comment'
     required: false
