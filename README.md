@@ -25,13 +25,13 @@ This section goes into detail on how you can use this Action in your own workflo
 
 | Input | Required? | Default | Description |
 | ----- | --------- | ------- | ----------- |
-| github_token | yes | ${{ github.token }} | The GitHub token used to create an authenticated client - Provided for you by default! |
-| reaction | no | eyes | If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes" |
-| lock_trigger | no | .lock | The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock" |
-| unlock_trigger | no | .unlock | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
-| lock_info_alias | no | .wcid | An alias or shortcut to get details about the current lock (if it exists) Example: ".info" - Hubbers will find the ".wcid" default helpful ("where can I deploy") |
-| prefix_only | no | true | If "false", the trigger can match anywhere in the comment |
-| mode | no | - | The mode to use "lock", "unlock", or "check". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
+| `github_token` | `true` | `${{ github.token }}` | The GitHub token used to create an authenticated client - Provided for you by default! |
+| `reaction` | `false` | `eyes` | If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes" |
+| `lock_trigger` | `false` | `.lock` | The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock" |
+| `unlock_trigger` | `false` | `.unlock` | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
+| `lock_info_alias` | `false` | `.wcid` | An alias or shortcut to get details about the current lock (if it exists) Example: ".info" - Hubbers will find the ".wcid" default helpful ("where can I deploy") |
+| `prefix_only` | `false` | `"true"` | If "false", the trigger can match anywhere in the comment |
+| `mode` | `false` | - | The mode to use "lock", "unlock", or "check". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
 
 ### About the `mode` Input
 
@@ -41,13 +41,13 @@ If you wish to use this Action via a comment on a pull request, simply omit the 
 
 | Output | Description |
 | ------ | ----------- |
-| triggered | The string "true" if the trigger was found, otherwise the string "false" |
-| comment_id | The comment id which triggered this deployment |
+| `triggered` | The string "true" if the trigger was found, otherwise the string "false" |
+| `comment_id` | The comment id which triggered this deployment |
 | type | The type of trigger which was found - 'lock', 'unlock', or 'info-info-alias' |
-| comment_body | The comment body which triggered this action (if it was not headless) |
-| headless | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
-| locked | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
-| branch | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
+| `comment_body` | The comment body which triggered this action (if it was not headless) |
+| `headless` | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
+| `locked` | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
+| `branch` | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
 
 ## Examples 📖
 
