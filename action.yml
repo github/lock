@@ -50,6 +50,10 @@ outputs:
     description: 'If the mode is set to "check", this output will be "true" if a lock exists, otherwise "false"'
   branch:
     description: 'If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty'
+  global_lock_claimed:
+    description: 'The string "true" if the global lock was claimed'
+  global_lock_released:
+    description: 'The string "true" if the global lock was released'
 runs:
   using: "node16"
   main: "dist/index.js"
