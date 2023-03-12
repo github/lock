@@ -7,17 +7,18 @@ import {lock} from './functions/lock'
 import {unlock} from './functions/unlock'
 import {check} from './functions/check'
 import {timeDiff} from './functions/time-diff'
+import {LOCK_METADATA} from './functions/lock-metadata'
 import * as github from '@actions/github'
 import {context} from '@actions/github'
 import dedent from 'dedent-js'
 
 // Lock constants
-const LOCK_BRANCH = 'branch-deploy-lock'
-const LOCK_FILE = 'lock.json'
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_FILE = LOCK_METADATA.lockFile
 const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Lock info flags
-const LOCK_INFO_FLAGS = ['--info', '--i', '-i', '-d', '--details', '--d']
+const LOCK_INFO_FLAGS = LOCK_METADATA.lockInfoFlags
 
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 export async function run() {

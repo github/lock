@@ -2,11 +2,12 @@ import * as core from '@actions/core'
 import dedent from 'dedent-js'
 import {actionStatus} from './action-status'
 import {timeDiff} from './time-diff'
+import {LOCK_METADATA} from './lock-metadata'
 
 // Constants for the lock file
-const LOCK_BRANCH = 'branch-deploy-lock'
-const LOCK_FILE = 'lock.json'
-const LOCK_COMMIT_MSG = 'lock'
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_FILE = LOCK_METADATA.lockFile
+const LOCK_COMMIT_MSG = LOCK_METADATA.lockCommitMsg
 const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Helper function for creating a lock file for branch-deployment locks

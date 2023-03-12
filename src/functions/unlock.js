@@ -1,9 +1,10 @@
 import * as core from '@actions/core'
 import {actionStatus} from './action-status'
+import {LOCK_METADATA} from './lock-metadata'
 import dedent from 'dedent-js'
 
 // Constants for the lock file
-const LOCK_BRANCH = 'branch-deploy-lock'
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
 
 // Helper function for releasing a deployment lock
 // :param octokit: The octokit client

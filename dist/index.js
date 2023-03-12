@@ -9963,16 +9963,26 @@ async function timeDiff(firstDate, secondDate) {
   return `${days}d:${hours}h:${minutes}m:${seconds}s`
 }
 
+;// CONCATENATED MODULE: ./src/functions/lock-metadata.js
+const LOCK_METADATA = {
+  lockInfoFlags: ['--info', '--i', '-i', '--details', '--d', '-d'],
+  lockBranchSuffix: 'branch-deploy-lock',
+  globalLockBranch: 'global-branch-deploy-lock',
+  lockCommitMsg: 'lock',
+  lockFile: 'lock.json'
+}
+
 ;// CONCATENATED MODULE: ./src/functions/lock.js
 
 
 
 
 
+
 // Constants for the lock file
-const LOCK_BRANCH = 'branch-deploy-lock'
-const LOCK_FILE = 'lock.json'
-const LOCK_COMMIT_MSG = 'lock'
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_FILE = LOCK_METADATA.lockFile
+const LOCK_COMMIT_MSG = LOCK_METADATA.lockCommitMsg
 const BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Helper function for creating a lock file for branch-deployment locks
@@ -10311,8 +10321,9 @@ async function lock(
 
 
 
+
 // Constants for the lock file
-const unlock_LOCK_BRANCH = 'branch-deploy-lock'
+const unlock_LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
 
 // Helper function for releasing a deployment lock
 // :param octokit: The octokit client
@@ -10491,13 +10502,14 @@ var github = __nccwpck_require__(5438);
 
 
 
+
 // Lock constants
-const main_LOCK_BRANCH = 'branch-deploy-lock'
-const main_LOCK_FILE = 'lock.json'
+const main_LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const main_LOCK_FILE = LOCK_METADATA.lockFile
 const main_BASE_URL = process.env.GITHUB_SERVER_URL
 
 // Lock info flags
-const LOCK_INFO_FLAGS = ['--info', '--i', '-i', '-d', '--details', '--d']
+const LOCK_INFO_FLAGS = LOCK_METADATA.lockInfoFlags
 
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 async function run() {
