@@ -1,41 +1,73 @@
 import * as core from '@actions/core'
 import {actionStatus} from './action-status'
+import {LOCK_METADATA} from './lock-metadata'
 import dedent from 'dedent-js'
 
 // Constants for the lock file
-const LOCK_BRANCH = 'branch-deploy-lock'
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
 
 // Helper function for releasing a deployment lock
 // :param octokit: The octokit client
 // :param context: The GitHub Actions event context
+// :param environment: The environment to release the lock for
 // :param reactionId: The ID of the reaction to add to the issue comment (only used if the lock is successfully released) (Integer)
 // :param headless: A bool indicating whether or not it is a headless run (Boolean)
 // :returns: true if the lock was successfully released, a string with some details if silent was used, false otherwise
-export async function unlock(octokit, context, reactionId, headless = false) {
+export async function unlock(
+  octokit,
+  context,
+  environment,
+  reactionId,
+  headless = false
+) {
   try {
+    if (headless) {
+      core.setOutput('headless', 'true')
+    } else {
+      core.setOutput('headless', 'false')
+    }
+
+    var global = false
+    if (environment === 'global') {
+      global = true
+    }
+
     // Delete the lock branch
     const result = await octokit.rest.git.deleteRef({
       ...context.repo,
-      ref: `heads/${LOCK_BRANCH}`
+      ref: `heads/${environment}-${LOCK_BRANCH}`
     })
 
     // If the lock was successfully released, return true
     if (result.status === 204) {
       core.info(`successfully removed lock`)
 
-      // If headless, exit here
-      if (headless) {
-        core.info('removing lock - headless mode')
-        core.setOutput('headless', 'true')
-        return 'removed lock - headless'
+      // If a global lock was successfully released, set the output
+      if (global === true) {
+        core.setOutput('global_lock_released', 'true')
+      }
+
+      // construct the branch name and success message text
+      const branchName = `${environment}-${LOCK_BRANCH}`
+      var successText = ''
+      if (global === true) {
+        successText = '`global`'
+      } else {
+        successText = `\`${environment}\``
       }
 
       // Construct the message to add to the issue comment
       const comment = dedent(`
       ### 🔓 Deployment Lock Removed
 
-      The deployment lock has been successfully removed
+      The ${successText} deployment lock has been successfully removed
       `)
+
+      // If headless, exit here
+      if (headless) {
+        core.info(`removed lock: ${branchName}`)
+        return 'removed lock - headless'
+      }
 
       // Set the action status with the comment
       await actionStatus(context, octokit, reactionId, comment, true, true)
@@ -44,7 +76,7 @@ export async function unlock(octokit, context, reactionId, headless = false) {
       return true
     } else {
       // If the lock was not successfully released, return false and log the HTTP code
-      const comment = `failed to delete lock branch: ${LOCK_BRANCH} - HTTP: ${result.status}`
+      const comment = `failed to delete lock branch: ${environment}-${LOCK_BRANCH} - HTTP: ${result.status}`
       core.info(comment)
 
       // If headless, exit here
@@ -64,15 +96,16 @@ export async function unlock(octokit, context, reactionId, headless = false) {
         return 'no deployment lock currently set - headless'
       }
 
+      // Format the comment
+      var noLockMsg
+      if (global === true) {
+        noLockMsg = '🔓 There is currently no `global` deployment lock set'
+      } else {
+        noLockMsg = `🔓 There is currently no \`${environment}\` deployment lock set`
+      }
+
       // Leave a comment letting the user know there is no lock to release
-      await actionStatus(
-        context,
-        octokit,
-        reactionId,
-        '🔓 There is currently no deployment lock set',
-        true,
-        true
-      )
+      await actionStatus(context, octokit, reactionId, noLockMsg, true, true)
 
       // Return true since there is no lock to release
       return true

@@ -25,27 +25,35 @@ This section goes into detail on how you can use this Action in your own workflo
 
 | Input | Required? | Default | Description |
 | ----- | --------- | ------- | ----------- |
-| github_token | yes | ${{ github.token }} | The GitHub token used to create an authenticated client - Provided for you by default! |
-| reaction | no | eyes | If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes" |
-| lock_trigger | no | .lock | The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock" |
-| unlock_trigger | no | .unlock | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
-| lock_info_alias | no | .wcid | An alias or shortcut to get details about the current lock (if it exists) Example: ".info" - Hubbers will find the ".wcid" default helpful ("where can I deploy") |
-| prefix_only | no | true | If "false", the trigger can match anywhere in the comment |
-| mode | no | - | The mode to use "lock", "unlock", or "check". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
+| `github_token` | `true` | `${{ github.token }}` | The GitHub token used to create an authenticated client - Provided for you by default! |
+| `environment` | `true` | `"production"` | The explict environment to apply locking actions to when running in headless mode - OR the default environment to use when running in the context of IssueOps commands in a comment - Examples: production, development, etc - Use "global" for the global lock environment |
+| `environment_targets` | `false` | `"production,development,staging"` | Optional (or additional) target environments to select for use with lock/unlock. Example, "production,development,staging". Example  usage: `.lock development`, `.lock production`, `.unlock staging` |
+| `reaction` | `false` | `eyes` | If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes" |
+| `lock_trigger` | `false` | `.lock` | The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock" |
+| `unlock_trigger` | `false` | `.unlock` | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
+| `lock_info_alias` | `false` | `.wcid` | An alias or shortcut to get details about the current lock (if it exists) Example: ".info" - Hubbers will find the ".wcid" default helpful ("where can I deploy") |
+| `global_lock_flag` | `false` | `--global` | The flag to pass into the lock command to lock all environments on IssueOps commands in comments. Example: "--global" |
+| `prefix_only` | `false` | `"true"` | If "false", the trigger can match anywhere in the comment |
+| `mode` | `false` | - | The mode to use "lock", "unlock", or "check". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
 
 ### About the `mode` Input
 
-If you wish to use this Action via a comment on a pull request, simply omit the `mode` input. If you wish to use this Action via a workflow dispatch event, conditially in a custom workflow, or otherwise, you must provide the `mode` input. You are telling the Action what "mode" to use. The `mode` input can be either `lock` or `unlock`.
+If you wish to use this Action via a comment on a pull request, simply omit the `mode` input. If you wish to use this Action via a workflow dispatch event, conditially in a custom workflow, or otherwise, you must provide the `mode` input. You are telling the Action what "mode" to use. The `mode` input can be either `lock`, `unlock`, or `check`.
 
 ## Outputs 📤
 
 | Output | Description |
 | ------ | ----------- |
-| triggered | The string "true" if the trigger was found, otherwise the string "false" |
-| comment_id | The comment id which triggered this deployment |
-| headless | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
-| locked | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
-| branch | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
+| `triggered` | The string "true" if the trigger was found, otherwise the string "false" |
+| `comment_id` | The comment id which triggered this deployment |
+| type | The type of trigger which was found - 'lock', 'unlock', or 'info-info-alias' |
+| `comment_body` | The comment body which triggered this action (if it was not headless) |
+| `headless` | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
+| `locked` | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
+| `branch` | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
+| `global_lock_claimed` | The string "true" if the global lock was claimed |
+| `global_lock_released` | The string "true" if the global lock was released |
+| `lock_environment` | When running in headless mode and the "mode" is set to "check", this output will be the environment name that holds the lock, otherwise it will be empty |
 
 ## Examples 📖
 
@@ -77,14 +85,22 @@ jobs:
 ### Setting a Lock via a Workflow Dispatch Event
 
 ```yaml
-name: lock
+name: lock-dispatch
 
 on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for claiming the deployment lock for this repository'
+        description: 'Reason for claiming the deployment lock'
         required: false
+      environment:
+        description: 'The environment to claim a lock for (production, staging, etc) - global is supported to claim the special global lock)'
+        required: true
+        default: 'production'
+      mode:
+        description: 'The mode to use: check, lock, unlock'
+        required: true
+        default: 'lock'
 
 permissions:
   contents: write
@@ -93,12 +109,12 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
-      # Lock
       - uses: github/lock@vX.X.X
         id: lock
         with:
-          mode: "lock"
+          mode: ${{ github.event.inputs.mode }}
           reason: ${{ github.event.inputs.reason }}
+          environment: ${{ github.event.inputs.environment }}
 ```
 
 ### Removing a Lock via a Workflow Dispatch Event

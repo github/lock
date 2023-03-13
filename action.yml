@@ -9,6 +9,14 @@ inputs:
     description: The GitHub token used to create an authenticated client - Provided for you by default!
     default: ${{ github.token }}
     required: true
+  environment:
+    description: 'The explict environment to apply locking actions to when running in headless mode - OR the default environment to use when running in the context of IssueOps commands in a comment - Examples: production, development, etc - Use "global" for the global lock environment'
+    required: true
+    default: "production"
+  environment_targets:
+    description: 'Optional (or additional) target environments to select for use with lock/unlock. Example, "production,development,staging". Example  usage: `.lock development`, `.lock production`, `.unlock staging`'
+    required: false
+    default: "production,development,staging"
   lock_trigger:
     description: 'The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock"'
     required: false
@@ -25,6 +33,10 @@ inputs:
     description: 'An alias or shortcut to get details about the current lock (if it exists) Example: ".info"'
     required: false
     default: ".wcid"
+  global_lock_flag:
+    description: 'The flag to pass into the lock command to lock all environments. Example: "--global"'
+    required: false
+    default: "--global"
   prefix_only:
     description: 'If "false", the trigger can match anywhere in the comment'
     required: false
@@ -40,12 +52,22 @@ outputs:
     description: 'The string "true" if the trigger was found, otherwise the string "false"'
   comment_id:
     description: The comment id which triggered this deployment (if it was not headless)
+  type:
+    description: The type of trigger which was found - 'lock', 'unlock', or 'info-info-alias'
+  comment_body:
+    description: The comment body which triggered this action (if it was not headless)
   headless:
     description: 'The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request'
   locked:
     description: 'If the mode is set to "check", this output will be "true" if a lock exists, otherwise "false"'
+  lock_environment:
+    description: When running in headless mode and the "mode" is set to "check", this output will be the environment name that holds the lock, otherwise it will be empty
   branch:
     description: 'If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty'
+  global_lock_claimed:
+    description: 'The string "true" if the global lock was claimed'
+  global_lock_released:
+    description: 'The string "true" if the global lock was released'
 runs:
   using: "node16"
   main: "dist/index.js"
