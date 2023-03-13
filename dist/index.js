@@ -10690,7 +10690,6 @@ async function run() {
     const lock_info_alias = core.getInput('lock_info_alias')
     const lock_mode = core.getInput('mode')
     const environment = core.getInput('environment') // the env to lock/unlock/check
-    const defaultEnvironment = core.getInput('default_environment') // the default env to use on IssueOps commands
 
     // Get variables from the event context
     const {owner, repo} = github.context.repo
@@ -10775,7 +10774,7 @@ async function run() {
 
     // if we get here, this is a flow from an issue comment and we need to determine the environment from the comment body
     const environmentTarget = await environmentTargets(
-      defaultEnvironment,
+      environment,
       body,
       lock_trigger,
       unlock_trigger,
