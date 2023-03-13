@@ -26,11 +26,12 @@ This section goes into detail on how you can use this Action in your own workflo
 | Input | Required? | Default | Description |
 | ----- | --------- | ------- | ----------- |
 | `github_token` | `true` | `${{ github.token }}` | The GitHub token used to create an authenticated client - Provided for you by default! |
+| `environment` | `true` | `"production"` | The explict environment to apply locking actions to when running in headless mode - OR the default environment to use when running in the context of IssueOps commands in a comment - Examples: production, development, etc - Use "global" for the global lock environment |
 | `reaction` | `false` | `eyes` | If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes" |
 | `lock_trigger` | `false` | `.lock` | The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock" |
 | `unlock_trigger` | `false` | `.unlock` | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
 | `lock_info_alias` | `false` | `.wcid` | An alias or shortcut to get details about the current lock (if it exists) Example: ".info" - Hubbers will find the ".wcid" default helpful ("where can I deploy") |
-| `global_lock_flag` | `false` | `--global` | The flag to pass into the lock command to lock all environments. Example: "--global" |
+| `global_lock_flag` | `false` | `--global` | The flag to pass into the lock command to lock all environments on IssueOps commands in comments. Example: "--global" |
 | `prefix_only` | `false` | `"true"` | If "false", the trigger can match anywhere in the comment |
 | `mode` | `false` | - | The mode to use "lock", "unlock", or "check". If not provided, the default mode assumes the workflow is not headless and triggered by a comment on a pull request - Example: .lock / .unlock
 
