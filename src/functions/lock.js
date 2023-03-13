@@ -180,6 +180,11 @@ export async function lock(
 
   const branchName = `${environment}-${LOCK_BRANCH}`
 
+  // lock debug info
+  core.debug(`detected lock env: ${environment}`)
+  core.debug(`detected lock global: ${global}`)
+  core.debug(`constructed lock branch: ${branchName}`)
+
   // Attempt to obtain a reason from the context for the lock - either a string or null
   var reason
   if (headless) {

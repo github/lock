@@ -21,6 +21,7 @@ const lockBase64OctocatGlobal =
 const saveStateMock = jest.spyOn(core, 'saveState')
 const setFailedMock = jest.spyOn(core, 'setFailed')
 const infoMock = jest.spyOn(core, 'info')
+// const debugMock = jest.spyOn(core, 'debug')
 const setOutputMock = jest.spyOn(core, 'setOutput')
 const actionStatusSpy = jest
   .spyOn(actionStatus, 'actionStatus')
@@ -33,6 +34,7 @@ beforeEach(() => {
   jest.spyOn(core, 'setFailed').mockImplementation(() => {})
   jest.spyOn(core, 'saveState').mockImplementation(() => {})
   jest.spyOn(core, 'info').mockImplementation(() => {})
+  jest.spyOn(core, 'debug').mockImplementation(() => {})
   jest.spyOn(core, 'setOutput').mockImplementation(() => {})
 })
 

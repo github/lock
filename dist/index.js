@@ -9991,6 +9991,8 @@ const BASE_URL = process.env.GITHUB_SERVER_URL
 // :param ref: The branch which requested the lock / deployment
 // :param reason: The reason for the deployment lock
 // :param sticky: A bool indicating whether the lock is sticky or not (should persist forever)
+// :param environment: The environment to which the lock applies
+// :param global: A bool indicating whether the lock is global or not
 // :param headless: A bool indicating whether the lock is being claimed from a headless run or not
 // :returns: The result of the createOrUpdateFileContents API call
 async function createLock(
@@ -9999,6 +10001,8 @@ async function createLock(
   ref,
   reason,
   sticky,
+  environment,
+  global,
   reactionId,
   headless
 ) {
@@ -10019,13 +10023,16 @@ async function createLock(
   // Construct the file contents for the lock file
   // Use the 'sticky' flag to determine whether the lock is sticky or not
   // Sticky locks will persist forever
-  // Non-sticky locks are removed after the deployment finishes
+  // Non-sticky locks will be removed if the branch that claimed the lock is deleted / merged
   const lockData = {
     reason: reason,
     branch: branch,
     created_at: new Date().toISOString(),
     created_by: context.actor,
     sticky: sticky,
+    environment: environment,
+    global: global,
+    unlock_command: await constructUnlockCommand(environment, global),
     link: link
   }
 
@@ -10065,6 +10072,25 @@ async function createLock(
 
   // Return the result of the lock file creation
   return result
+}
+
+// Helper function to construct the unlock command
+// :param environment: The name of the environment
+// :param global: A bool indicating whether the lock is global or not
+// :returns: The unlock command (String)
+async function constructUnlockCommand(environment, global) {
+  // fetch the unlock trigger
+  const unlockTrigger = core.getInput('unlock_trigger').trim()
+  // fetch the global lock flag
+  const globalFlag = core.getInput('global_lock_flag').trim()
+
+  // If the lock is global, return the global lock branch name
+  if (global === true) {
+    return `${unlockTrigger} ${globalFlag}`
+  }
+
+  // If the lock is not global, return the environment-specific lock branch name
+  return `${unlockTrigger} ${environment}`
 }
 
 // Helper function to find a --reason flag in the comment body for a lock request
@@ -10121,6 +10147,19 @@ async function lock(
   detailsOnly = false,
   headless = false
 ) {
+  // check if the environment is for the global lock
+  var global = false
+  if (environment === 'global') {
+    global = true
+  }
+
+  const branchName = `${environment}-${LOCK_BRANCH}`
+
+  // lock debug info
+  core.debug(`detected lock env: ${environment}`)
+  core.debug(`detected lock global: ${global}`)
+  core.debug(`constructed lock branch: ${branchName}`)
+
   // Attempt to obtain a reason from the context for the lock - either a string or null
   var reason
   if (headless) {
@@ -10138,7 +10177,7 @@ async function lock(
   try {
     await octokit.rest.repos.getBranch({
       ...context.repo,
-      branch: LOCK_BRANCH
+      branch: branchName
     })
   } catch (error) {
     // Create the lock branch if it doesn't exist
@@ -10162,11 +10201,11 @@ async function lock(
       // Create the lock branch
       await octokit.rest.git.createRef({
         ...context.repo,
-        ref: `refs/heads/${LOCK_BRANCH}`,
+        ref: `refs/heads/${branchName}`,
         sha: baseBranch.data.commit.sha
       })
 
-      core.info(`Created lock branch: ${LOCK_BRANCH}`)
+      core.info(`Created lock branch: ${branchName}`)
 
       // Create the lock file
       await createLock(
@@ -10175,6 +10214,8 @@ async function lock(
         ref,
         reason,
         sticky,
+        environment,
+        global,
         reactionId,
         headless
       )
@@ -10308,6 +10349,8 @@ async function lock(
         ref,
         reason,
         sticky,
+        environment,
+        global,
         reactionId,
         headless
       )
