@@ -25,8 +25,8 @@ const lockBase64Monalisa =
 const lockBase64Octocat =
   'ewogICAgInJlYXNvbiI6ICJUZXN0aW5nIG15IG5ldyBmZWF0dXJlIHdpdGggbG90cyBvZiBjYXRzIiwKICAgICJicmFuY2giOiAib2N0b2NhdHMtZXZlcnl3aGVyZSIsCiAgICAiY3JlYXRlZF9hdCI6ICIyMDIyLTA2LTE0VDIxOjEyOjE0LjA0MVoiLAogICAgImNyZWF0ZWRfYnkiOiAib2N0b2NhdCIsCiAgICAic3RpY2t5IjogdHJ1ZSwKICAgICJlbnZpcm9ubWVudCI6ICJwcm9kdWN0aW9uIiwKICAgICJ1bmxvY2tfY29tbWFuZCI6ICIudW5sb2NrIHByb2R1Y3Rpb24iLAogICAgImdsb2JhbCI6IGZhbHNlLAogICAgImxpbmsiOiAiaHR0cHM6Ly9naXRodWIuY29tL3Rlc3Qtb3JnL3Rlc3QtcmVwby9wdWxsLzIjaXNzdWVjb21tZW50LTQ1NiIKfQo='
 
-// const lockBase64OctocatGlobal =
-//   'ewogICAgInJlYXNvbiI6ICJUZXN0aW5nIG15IG5ldyBmZWF0dXJlIHdpdGggbG90cyBvZiBjYXRzIiwKICAgICJicmFuY2giOiAib2N0b2NhdHMtZXZlcnl3aGVyZSIsCiAgICAiY3JlYXRlZF9hdCI6ICIyMDIyLTA2LTE0VDIxOjEyOjE0LjA0MVoiLAogICAgImNyZWF0ZWRfYnkiOiAib2N0b2NhdCIsCiAgICAic3RpY2t5IjogdHJ1ZSwKICAgICJlbnZpcm9ubWVudCI6IG51bGwsCiAgICAidW5sb2NrX2NvbW1hbmQiOiAiLnVubG9jayAtLWdsb2JhbCIsCiAgICAiZ2xvYmFsIjogdHJ1ZSwKICAgICJsaW5rIjogImh0dHBzOi8vZ2l0aHViLmNvbS90ZXN0LW9yZy90ZXN0LXJlcG8vcHVsbC8yI2lzc3VlY29tbWVudC00NTYiCn0K'
+const lockBase64OctocatGlobal =
+  'ewogICAgInJlYXNvbiI6ICJUZXN0aW5nIG15IG5ldyBmZWF0dXJlIHdpdGggbG90cyBvZiBjYXRzIiwKICAgICJicmFuY2giOiAib2N0b2NhdHMtZXZlcnl3aGVyZSIsCiAgICAiY3JlYXRlZF9hdCI6ICIyMDIyLTA2LTE0VDIxOjEyOjE0LjA0MVoiLAogICAgImNyZWF0ZWRfYnkiOiAib2N0b2NhdCIsCiAgICAic3RpY2t5IjogdHJ1ZSwKICAgICJlbnZpcm9ubWVudCI6IG51bGwsCiAgICAidW5sb2NrX2NvbW1hbmQiOiAiLnVubG9jayAtLWdsb2JhbCIsCiAgICAiZ2xvYmFsIjogdHJ1ZSwKICAgICJsaW5rIjogImh0dHBzOi8vZ2l0aHViLmNvbS90ZXN0LW9yZy90ZXN0LXJlcG8vcHVsbC8yI2lzc3VlY29tbWVudC00NTYiCn0K'
 
 const saveStateMock = jest.spyOn(core, 'saveState')
 const setFailedMock = jest.spyOn(core, 'setFailed')
@@ -193,6 +193,7 @@ test('Determines that another user has the lock and exits - during a lock claim 
       repos: {
         getBranch: jest
           .fn()
+          .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
           .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
         getContent: jest
@@ -207,7 +208,17 @@ test('Determines that another user has the lock and exits - during a lock claim 
     environment: 'production',
     global: false,
     globalFlag: '--global',
-    lockData: null,
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
+      environment: 'production',
+      global: false,
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+      reason: 'Testing my new feature with lots of cats',
+      sticky: true,
+      unlock_command: '.unlock production',
+    },
     status: false
   })
   expect(actionStatusSpy).toHaveBeenCalledWith(
@@ -236,6 +247,7 @@ test('Determines that another user has the lock and exits - during a direct lock
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
         getContent: jest
           .fn()
+          .mockRejectedValueOnce(new NotFoundError('file not found'))
           .mockReturnValue({data: {content: lockBase64Octocat}})
       }
     }
@@ -246,7 +258,17 @@ test('Determines that another user has the lock and exits - during a direct lock
     environment: 'production',
     global: false,
     globalFlag: '--global',
-    lockData: null,
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
+      environment: 'production',
+      global: false,
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+      reason: 'Testing my new feature with lots of cats',
+      sticky: true,
+      unlock_command: '.unlock production',
+    },
     status: false
   })
   expect(actionStatusSpy).toHaveBeenCalledWith(
@@ -311,6 +333,7 @@ test('Request detailsOnly on the lock file and gets lock file data successfully'
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
         getContent: jest
           .fn()
+          .mockRejectedValueOnce(new NotFoundError('file not found'))
           .mockReturnValue({data: {content: lockBase64Octocat}})
       }
     }
@@ -575,6 +598,177 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
   expect(infoMock).toHaveBeenCalledWith('deployment lock is sticky')
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: production-branch-deploy-lock'
+  )
+})
+
+test('Determines that the lock request is coming from current owner of the lock (GLOBAL lock) and exits - sticky', async () => {
+  context.actor = 'octocat'
+  context.payload.comment.body = '.lock --global'
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockReturnValue({data: {content: lockBase64OctocatGlobal}})
+      }
+    }
+  }
+  expect(await lock(octokit, context, ref, 123, true, 'global')).toStrictEqual({
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+      reason: 'Testing my new feature with lots of cats',
+      sticky: true,
+      environment: null,
+      global: true,
+      unlock_command: '.unlock --global'
+    },
+    status: 'owner',
+    global: true,
+    globalFlag: '--global',
+    environment: 'global'
+  })
+  expect(debugMock).toHaveBeenCalledWith(`detected lock env: global`)
+  expect(debugMock).toHaveBeenCalledWith(`detected lock global: true`)
+  expect(debugMock).toHaveBeenCalledWith(
+    `constructed lock branch: global-branch-deploy-lock`
+  )
+  expect(infoMock).toHaveBeenCalledWith('octocat is the owner of the lock')
+})
+
+test('Request detailsOnly on the lock file and gets lock file data successfully -- .wcid --global', async () => {
+  context.payload.comment.body = '.wcid --global'
+
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockReturnValueOnce({data: {content: lockBase64OctocatGlobal}}) // succeeds looking for a global lock
+      }
+    }
+  }
+  expect(
+    await lock(octokit, context, ref, 123, false, 'global', true, false)
+  ).toStrictEqual({
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
+      environment: null,
+      global: true,
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+      reason: 'Testing my new feature with lots of cats',
+      sticky: true,
+      unlock_command: '.unlock --global'
+    },
+    status: 'details-only',
+    environment: 'global',
+    globalFlag: '--global',
+    global: true
+  })
+  expect(debugMock).toHaveBeenCalledWith(`detected lock env: global`)
+  expect(debugMock).toHaveBeenCalledWith(`detected lock global: true`)
+  expect(debugMock).toHaveBeenCalledWith(
+    `constructed lock branch: global-branch-deploy-lock`
+  )
+})
+
+test('Request detailsOnly on the lock file and does not find a lock -- .wcid --global', async () => {
+  context.payload.comment.body = '.wcid --global'
+
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockRejectedValueOnce(new NotFoundError('branch not found')),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockRejectedValue(new NotFoundError('file not found')) // fails looking for a global lock
+      }
+    }
+  }
+  expect(
+    await lock(octokit, context, ref, 123, false, 'global', true, false)
+  ).toStrictEqual({
+    lockData: null,
+    status: 'details-only',
+    environment: 'global',
+    globalFlag: '--global',
+    global: true
+  })
+  expect(debugMock).toHaveBeenCalledWith(`detected lock env: global`)
+  expect(debugMock).toHaveBeenCalledWith(`detected lock global: true`)
+  expect(debugMock).toHaveBeenCalledWith(
+    `constructed lock branch: global-branch-deploy-lock`
+  )
+})
+
+test('Determines that another user has the lock (GLOBAL) and exits - during a direct lock claim with .lock --global', async () => {
+  context.payload.comment.body = '.lock --global'
+  context.actor = 'monalisa'
+  const actionStatusSpy = jest
+    .spyOn(actionStatus, 'actionStatus')
+    .mockImplementation(() => {
+      return undefined
+    })
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockReturnValueOnce({data: {content: lockBase64OctocatGlobal}})
+      }
+    }
+  }
+  expect(await lock(octokit, context, ref, 123, true, 'global', false, false)).toStrictEqual({
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
+      environment: null,
+      global: true,
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+      reason: 'Testing my new feature with lots of cats',
+      sticky: true,
+      unlock_command: '.unlock --global'
+    },
+    status: false,
+    globalFlag: '--global',
+    environment: 'global',
+    global: true
+  })
+  expect(debugMock).toHaveBeenCalledWith(`detected lock env: global`)
+  expect(debugMock).toHaveBeenCalledWith(`detected lock global: true`)
+  expect(debugMock).toHaveBeenCalledWith(
+    `constructed lock branch: global-branch-deploy-lock`
+  )
+  expect(actionStatusSpy).toHaveBeenCalledWith(
+    context,
+    octokit,
+    123,
+    expect.stringMatching(
+      /Sorry __monalisa__, the `global` deployment lock is currently claimed by __octocat__/
+    )
+  )
+  expect(setFailedMock).toHaveBeenCalledWith(
+    expect.stringMatching(/Cannot claim deployment lock/)
   )
 })
 

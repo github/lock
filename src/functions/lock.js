@@ -435,13 +435,13 @@ export async function lock(
   if (globalLockData === false && detailsOnly === true && global === true) {
     // If the global lock file doesn't exist and this is a detailsOnly request for the global lock return null
     return {
-      status: null,
+      status: 'details-only',
       lockData: null,
       globalFlag,
       environment,
       global
     }
-  } else if (globalLockData && detailsOnly) {
+  } else if (globalLockData && detailsOnly === true) {
     // If the lock file exists and this is a detailsOnly request for the global lock, return the lock data
     return {
       status: 'details-only',
@@ -464,7 +464,7 @@ export async function lock(
     )
     if (globalLockOwner === false) {
       // If the requestor is not the owner of the global lock, return false
-      return {status: false, lockData: null, globalFlag, environment, global}
+      return {status: false, lockData: globalLockData, globalFlag, environment, global}
     } else {
       core.info('requestor is the owner of the global lock - continuing checks')
     }
