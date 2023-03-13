@@ -100,7 +100,7 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
   }
   expect(await lock(octokit, context, ref, 123, false, environment)).toBe(true)
   expect(infoMock).toHaveBeenCalledWith(
-    'Created lock branch: branch-deploy-lock'
+    'Created lock branch: production-branch-deploy-lock'
   )
 })
 
@@ -128,7 +128,7 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
     await lock(octokit, context, null, null, false, environment, false, true)
   ).toBe(true)
   expect(infoMock).toHaveBeenCalledWith(
-    'Created lock branch: branch-deploy-lock'
+    'Created lock branch: production-branch-deploy-lock'
   )
   expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
@@ -401,7 +401,7 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
   expect(infoMock).toHaveBeenCalledWith('deployment lock obtained')
   expect(infoMock).toHaveBeenCalledWith('deployment lock is sticky')
   expect(infoMock).toHaveBeenCalledWith(
-    'Created lock branch: branch-deploy-lock'
+    'Created lock branch: production-branch-deploy-lock'
   )
 })
 
@@ -411,7 +411,7 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
   expect(infoMock).toHaveBeenCalledWith('deployment lock obtained')
   expect(infoMock).toHaveBeenCalledWith('deployment lock is sticky')
   expect(infoMock).toHaveBeenCalledWith(
-    'Created lock branch: branch-deploy-lock'
+    'Created lock branch: production-branch-deploy-lock'
   )
 })
 

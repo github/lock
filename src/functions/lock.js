@@ -172,11 +172,13 @@ export async function lock(
   detailsOnly = false,
   headless = false
 ) {
-
+  // check if the environment is for the global lock
   var global = false
   if (environment === 'global') {
     global = true
   }
+
+  const branchName = `${environment}-${LOCK_BRANCH}`
 
   // Attempt to obtain a reason from the context for the lock - either a string or null
   var reason
@@ -195,7 +197,7 @@ export async function lock(
   try {
     await octokit.rest.repos.getBranch({
       ...context.repo,
-      branch: LOCK_BRANCH
+      branch: branchName
     })
   } catch (error) {
     // Create the lock branch if it doesn't exist
@@ -219,11 +221,11 @@ export async function lock(
       // Create the lock branch
       await octokit.rest.git.createRef({
         ...context.repo,
-        ref: `refs/heads/${LOCK_BRANCH}`,
+        ref: `refs/heads/${branchName}`,
         sha: baseBranch.data.commit.sha
       })
 
-      core.info(`Created lock branch: ${LOCK_BRANCH}`)
+      core.info(`Created lock branch: ${branchName}`)
 
       // Create the lock file
       await createLock(
