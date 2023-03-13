@@ -115,51 +115,18 @@ test('successfully runs in lock mode from a comment', async () => {
 })
 
 test('successfully runs in unlock mode from a comment', async () => {
-  github.context.payload = {
-    issue: {
-      number: 123
-    },
-    comment: {
-      body: '.unlock',
-      id: 123,
-      user: {
-        login: 'monalisa'
-      }
-    }
-  }
+  github.context.payload.comment.body = '.unlock'
   expect(await run()).toBe('safe-exit')
   expect(setOutputMock).toHaveBeenCalledWith('type', 'unlock')
 })
 
 test('successfully runs in lock info mode from a comment', async () => {
-  github.context.payload = {
-    issue: {
-      number: 123
-    },
-    comment: {
-      body: '.wcid',
-      id: 123,
-      user: {
-        login: 'monalisa'
-      }
-    }
-  }
+  github.context.payload.comment.body = '.wcid'
   expect(await run()).toBe('safe-exit')
 })
 
 test('successfully runs in lock info mode from a comment and finds no lock', async () => {
-  github.context.payload = {
-    issue: {
-      number: 123
-    },
-    comment: {
-      body: '.wcid',
-      id: 123,
-      user: {
-        login: 'monalisa'
-      }
-    }
-  }
+  github.context.payload.comment.body = '.wcid'
   jest.spyOn(lock, 'lock').mockImplementation(() => {
     return null
   })
@@ -185,18 +152,7 @@ test('successfully runs in lock mode from a comment and fails due to a bad env',
 })
 
 test('fails due to no trigger being found', async () => {
-  github.context.payload = {
-    issue: {
-      number: 123
-    },
-    comment: {
-      body: '.shipit',
-      id: 123,
-      user: {
-        login: 'monalisa'
-      }
-    }
-  }
+  github.context.payload.comment.body = '.shipit'
   process.env.INPUT_TRIGGER = '.shipit'
   expect(await run()).toBe('safe-exit')
   expect(debugMock).toHaveBeenCalledWith('No trigger found')
