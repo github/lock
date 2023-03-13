@@ -1,8 +1,14 @@
 import * as core from '@actions/core'
 import {LOCK_METADATA} from './lock-metadata'
 
+// Helper function to check if a lock branch + lock file exists
+// :param octokit: The authenticated octokit instance
+// :param context: The github context
+// :param branch: The branch to check for a lock file
+// :returns: True if the lock file exists, false otherwise
 export async function checkLockFile(octokit, context, branch) {
   try {
+    // try to get the lock branch
     await octokit.rest.repos.getBranch({
       ...context.repo,
       branch: branch
