@@ -155,6 +155,7 @@ export async function lock(
       reason = null
     }
   } else {
+    core.setOutput('headless', 'false')
     reason = await findReason(context, sticky)
   }
 

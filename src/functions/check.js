@@ -8,6 +8,9 @@ import {checkLockFile} from './checkLockFile'
 // :param environment: The environment to check for a lock
 // :returns: true if the lock exists, false if it does not
 export async function check(octokit, context, environment) {
+  // check is always a headless run
+  core.setOutput('headless', 'true')
+
   // first, check if a global lock exists
   const globalLockExists = await checkLockFile(
     octokit,
