@@ -36,6 +36,7 @@ beforeEach(() => {
   jest.spyOn(core, 'info').mockImplementation(() => {})
   jest.spyOn(core, 'debug').mockImplementation(() => {})
   jest.spyOn(core, 'setOutput').mockImplementation(() => {})
+  process.env.INPUT_GLOBAL_LOCK_FLAG = '--global'
 })
 
 const octokit = {
@@ -149,19 +150,27 @@ test('Determines that another user has the lock and exits - during a lock claim 
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment)).toBe(false)
+  expect(
+    await lock(octokit, context, ref, 123, false, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: false
+  })
   expect(actionStatusSpy).toHaveBeenCalledWith(
     context,
     octokit,
     123,
     expect.stringMatching(
-      /Sorry __monalisa__, the deployment lock is currently claimed by __octocat__/
+      /Sorry __monalisa__, the `production` environment deployment lock is currently claimed by __octocat__/
     )
   )
   expect(saveStateMock).toHaveBeenCalledWith('bypass', 'true')
   expect(setFailedMock).toHaveBeenCalledWith(
     expect.stringMatching(
-      /Sorry __monalisa__, the deployment lock is currently claimed by __octocat__/
+      /Sorry __monalisa__, the `production` environment deployment lock is currently claimed by __octocat__/
     )
   )
 })
@@ -180,13 +189,21 @@ test('Determines that another user has the lock and exits - during a direct lock
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, true, environment)).toBe(false)
+  expect(
+    await lock(octokit, context, ref, 123, true, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: false
+  })
   expect(actionStatusSpy).toHaveBeenCalledWith(
     context,
     octokit,
     123,
     expect.stringMatching(
-      /Sorry __monalisa__, the deployment lock is currently claimed by __octocat__/
+      /Sorry __monalisa__, the `production` environment deployment lock is currently claimed by __octocat__/
     )
   )
   expect(saveStateMock).toHaveBeenCalledWith('bypass', 'true')
@@ -211,8 +228,13 @@ test('Determines that another user has the lock and exits - headless', async () 
   }
   expect(
     await lock(octokit, context, ref, 123, true, environment, false, true)
-  ).toBe(false)
-  // expect(saveStateMock).toHaveBeenCalledWith('bypass', 'true')
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: false
+  })
   expect(infoMock).toHaveBeenCalledWith(
     expect.stringMatching(/The current lock has been active/)
   )
@@ -235,15 +257,21 @@ test('Request detailsOnly on the lock file and gets lock file data successfully'
   expect(
     await lock(octokit, context, ref, 123, false, environment, true)
   ).toStrictEqual({
-    branch: 'octocats-everywhere',
-    created_at: '2022-06-14T21:12:14.041Z',
-    created_by: 'octocat',
-    link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
-    reason: 'Testing my new feature with lots of cats',
-    sticky: true,
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+      reason: 'Testing my new feature with lots of cats',
+      sticky: true,
+      environment: environment,
+      global: false,
+      unlock_command: '.unlock production'
+    },
     environment: environment,
     global: false,
-    unlock_command: '.unlock production'
+    globalFlag: '--global',
+    status: 'details-only'
   })
 })
 
@@ -265,9 +293,15 @@ test('Request detailsOnly on the lock file when the lock branch exists but no lo
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment, true)).toBe(
-    null
-  )
+  expect(
+    await lock(octokit, context, ref, 123, false, environment, true)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: null
+  })
 })
 
 test('Request detailsOnly on the lock file when no branch exists', async () => {
@@ -309,9 +343,25 @@ test('Determines that the lock request is coming from current owner of the lock 
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment)).toBe(
-    'owner'
-  )
+  expect(
+    await lock(octokit, context, ref, 123, false, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: {
+      branch: 'cool-new-feature',
+      created_at: '2022-06-15T21:12:14.041Z',
+      created_by: 'monalisa',
+      environment: 'production',
+      global: false,
+      link: 'https://github.com/test-org/test-repo/pull/3#issuecomment-123',
+      reason: null,
+      sticky: false,
+      unlock_command: '.unlock production'
+    },
+    status: 'owner'
+  })
   expect(infoMock).toHaveBeenCalledWith('monalisa is the owner of the lock')
 })
 
@@ -329,9 +379,25 @@ test('Determines that the lock request is coming from current owner of the lock 
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, true, environment)).toBe(
-    'owner'
-  )
+  expect(
+    await lock(octokit, context, ref, 123, true, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: {
+      branch: 'cool-new-feature',
+      created_at: '2022-06-15T21:12:14.041Z',
+      created_by: 'monalisa',
+      environment: 'production',
+      global: false,
+      link: 'https://github.com/test-org/test-repo/pull/3#issuecomment-123',
+      reason: null,
+      sticky: false,
+      unlock_command: '.unlock production'
+    },
+    status: 'owner'
+  })
   expect(infoMock).toHaveBeenCalledWith('monalisa is the owner of the lock')
 })
 
@@ -351,7 +417,23 @@ test('Determines that the lock request is coming from current owner of the lock 
   }
   expect(
     await lock(octokit, context, null, null, true, environment, false, true)
-  ).toBe('owner - headless')
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: {
+      branch: 'cool-new-feature',
+      created_at: '2022-06-15T21:12:14.041Z',
+      created_by: 'monalisa',
+      environment: 'production',
+      global: false,
+      link: 'https://github.com/test-org/test-repo/pull/3#issuecomment-123',
+      reason: null,
+      sticky: false,
+      unlock_command: '.unlock production'
+    },
+    status: 'owner-headless'
+  })
   expect(infoMock).toHaveBeenCalledWith('monalisa is the owner of the lock')
   expect(setOutputMock).toHaveBeenCalledWith('headless', 'true')
 })
@@ -374,7 +456,15 @@ test('Creates a lock when the lock branch exists but no lock file exists', async
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment)).toBe(true)
+  expect(
+    await lock(octokit, context, ref, 123, false, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: true
+  })
   expect(infoMock).toHaveBeenCalledWith('deployment lock obtained')
 })
 
