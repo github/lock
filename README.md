@@ -38,7 +38,7 @@ This section goes into detail on how you can use this Action in your own workflo
 
 ### About the `mode` Input
 
-If you wish to use this Action via a comment on a pull request, simply omit the `mode` input. If you wish to use this Action via a workflow dispatch event, conditially in a custom workflow, or otherwise, you must provide the `mode` input. You are telling the Action what "mode" to use. The `mode` input can be either `lock` or `unlock`.
+If you wish to use this Action via a comment on a pull request, simply omit the `mode` input. If you wish to use this Action via a workflow dispatch event, conditially in a custom workflow, or otherwise, you must provide the `mode` input. You are telling the Action what "mode" to use. The `mode` input can be either `lock`, `unlock`, or `check`.
 
 ## Outputs 📤
 
@@ -85,14 +85,22 @@ jobs:
 ### Setting a Lock via a Workflow Dispatch Event
 
 ```yaml
-name: lock
+name: lock-dispatch
 
 on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for claiming the deployment lock for this repository'
+        description: 'Reason for claiming the deployment lock'
         required: false
+      environment:
+        description: 'The environment to claim a lock for (production, staging, etc) - global is supported to claim the special global lock)'
+        required: true
+        default: 'production'
+      mode:
+        description: 'The mode to use: check, lock, unlock'
+        required: true
+        default: 'lock'
 
 permissions:
   contents: write
@@ -101,12 +109,12 @@ jobs:
   lock:
     runs-on: ubuntu-latest
     steps:
-      # Lock
       - uses: github/lock@vX.X.X
         id: lock
         with:
-          mode: "lock"
+          mode: ${{ github.event.inputs.mode }}
           reason: ${{ github.event.inputs.reason }}
+          environment: ${{ github.event.inputs.environment }}
 ```
 
 ### Removing a Lock via a Workflow Dispatch Event
