@@ -31,6 +31,7 @@ export async function run() {
     const unlock_trigger = core.getInput('unlock_trigger')
     const lock_info_alias = core.getInput('lock_info_alias')
     const lock_mode = core.getInput('mode')
+    const environment = core.getInput('environment') // the env to lock/unlock/check
 
     // Get variables from the event context
     const {owner, repo} = context.repo
@@ -59,7 +60,7 @@ export async function run() {
       )
       return 'success - headless'
     } else if (lock_mode === 'check') {
-      await check(octokit, context)
+      await check(octokit, context, environment)
       return 'success - headless'
     }
 

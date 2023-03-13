@@ -10410,32 +10410,19 @@ async function unlock(octokit, context, reactionId, headless = false) {
   }
 }
 
-;// CONCATENATED MODULE: ./src/functions/check.js
+;// CONCATENATED MODULE: ./src/functions/checkLockFile.js
 
 
 
-// Constants for the lock file
-const check_LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
-const check_LOCK_FILE = LOCK_METADATA.lockFile
-const NO_LOCK = 'lock does not exist'
-const FOUND_LOCK = 'lock exists'
-
-// Helper function for checking if a deployment lock exists
-// :param octokit: The octokit client
-// :param context: The GitHub Actions event context
-// :returns: true if the lock exists, false if it does not
-async function check(octokit, context) {
-  // Check if the lock branch already exists
+async function checkLockFile(octokit, context, branch) {
   try {
     await octokit.rest.repos.getBranch({
       ...context.repo,
-      branch: check_LOCK_BRANCH
+      branch: branch
     })
   } catch (error) {
     // If the lock file doesn't exist, return
     if (error.status === 404) {
-      core.info(NO_LOCK)
-      core.setOutput('locked', 'false')
       return false
     }
   }
@@ -10445,8 +10432,8 @@ async function check(octokit, context) {
     // Get the lock file contents
     const response = await octokit.rest.repos.getContent({
       ...context.repo,
-      path: check_LOCK_FILE,
-      ref: check_LOCK_BRANCH
+      path: LOCK_METADATA.lockFile,
+      ref: branch
     })
 
     // Decode the file contents to json
@@ -10460,14 +10447,8 @@ async function check(octokit, context) {
       core.warning(
         'lock file exists, but cannot be decoded - setting locked to false'
       )
-      core.setOutput('locked', 'false')
       return false
     }
-
-    // If the lock file exists, and can be decoded, return true
-    // Set locked to true if the lock file exists
-    core.info(FOUND_LOCK)
-    core.setOutput('locked', 'true')
 
     if (Object.prototype.hasOwnProperty.call(lockData, 'branch')) {
       core.setOutput('branch', lockData['branch'])
@@ -10477,13 +10458,63 @@ async function check(octokit, context) {
   } catch (error) {
     // If the lock file doesn't exist, return false
     if (error.status === 404) {
-      core.info(NO_LOCK)
-      core.setOutput('locked', 'false')
       return false
     }
 
     // If some other error occurred, throw it
     throw new Error(error)
+  }
+}
+
+;// CONCATENATED MODULE: ./src/functions/check.js
+
+
+
+
+// Helper function for checking if a deployment lock exists
+// :param octokit: The octokit client
+// :param context: The GitHub Actions event context
+// :param environment: The environment to check for a lock
+// :returns: true if the lock exists, false if it does not
+async function check(octokit, context, environment) {
+  // first, check if a global lock exists
+  const globalLockExists = await checkLockFile(
+    octokit,
+    context,
+    LOCK_METADATA.globalLockBranch
+  )
+  if (globalLockExists) {
+    core.info('global lock exists')
+    core.setOutput('locked', 'true')
+    core.setOutput('lock_environment', 'global')
+    return true
+  } else {
+    core.info('global lock does not exist')
+
+    // if this is request only for the global lock, return
+    if (environment === 'global') {
+      core.info('no global lock exists')
+      core.setOutput('locked', 'false')
+      return false
+    }
+  }
+
+  // if a global lock does not exist, check if a lock exists for the environment
+  const lockBranch = `${environment}-${LOCK_METADATA.lockBranchSuffix}`
+  const environmentLockExists = await checkLockFile(
+    octokit,
+    context,
+    lockBranch
+  )
+  if (environmentLockExists) {
+    core.info(`${environment} lock exists`)
+    core.setOutput('locked', 'true')
+    core.setOutput('lock_environment', environment)
+    return true
+  } else {
+    core.info(`${environment} lock does not exist`)
+    core.setOutput('locked', 'false')
+    return false
   }
 }
 
@@ -10523,6 +10554,7 @@ async function run() {
     const unlock_trigger = core.getInput('unlock_trigger')
     const lock_info_alias = core.getInput('lock_info_alias')
     const lock_mode = core.getInput('mode')
+    const environment = core.getInput('environment') // the env to lock/unlock/check
 
     // Get variables from the event context
     const {owner, repo} = github.context.repo
@@ -10551,7 +10583,7 @@ async function run() {
       )
       return 'success - headless'
     } else if (lock_mode === 'check') {
-      await check(octokit, github.context)
+      await check(octokit, github.context, environment)
       return 'success - headless'
     }
 

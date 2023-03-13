@@ -33,6 +33,7 @@ beforeEach(() => {
   process.env.INPUT_UNLOCK_TRIGGER = '.unlock'
   process.env.INPUT_LOCK_INFO_ALIAS = '.wcid'
   process.env.GITHUB_REPOSITORY = 'corp/test'
+  process.env.INPUT_ENVIRONMENT = 'production'
   github.context.payload = {
     issue: {
       number: 123
