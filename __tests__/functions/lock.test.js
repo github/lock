@@ -221,7 +221,10 @@ test('Request detailsOnly on the lock file and gets lock file data successfully'
     created_by: 'octocat',
     link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
     reason: 'Testing my new feature with lots of cats',
-    sticky: true
+    sticky: true,
+    environment: environment,
+    global: false,
+    unlock_command: '.unlock production'
   })
 })
 
