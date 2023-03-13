@@ -161,7 +161,7 @@ export async function run() {
             ### Lock Details 🔒
 
             The deployment lock is currently claimed by __${lockData.created_by}__
-        
+
             - __Reason__: \`${lockData.reason}\`
             - __Branch__: \`${lockData.branch}\`
             - __Created At__: \`${lockData.created_at}\`
@@ -169,9 +169,9 @@ export async function run() {
             - __Sticky__: \`${lockData.sticky}\`
             - __Lock Set Link__: [click here](${lockData.link})
             - __Lock Link__: [click here](${BASE_URL}/${owner}/${repo}/blob/${LOCK_BRANCH}/${LOCK_FILE})
-        
+
             The current lock has been active for \`${totalTime}\`
-        
+
             > If you need to release the lock, please comment \`${unlock_trigger}\`
             `)
 
@@ -180,8 +180,7 @@ export async function run() {
           context,
           octokit,
           reactRes.data.id,
-          // eslint-disable-next-line no-regex-spaces
-          lockMessage.replace(new RegExp('    ', 'g'), ''),
+          lockMessage,
           true,
           true
         )
@@ -192,9 +191,9 @@ export async function run() {
       } else if (lockData === null) {
         const lockMessage = dedent(`
             ### Lock Details 🔒
-        
+
             No active deployment locks found for the \`${owner}/${repo}\` repository
-        
+
             > If you need to create a lock, please comment \`${lock_trigger}\`
             `)
 
@@ -202,8 +201,7 @@ export async function run() {
           context,
           octokit,
           reactRes.data.id,
-          // eslint-disable-next-line no-regex-spaces
-          lockMessage.replace(new RegExp('    ', 'g'), ''),
+          lockMessage,
           true,
           true
         )

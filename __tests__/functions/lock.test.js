@@ -2,7 +2,6 @@ import * as core from '@actions/core'
 import {lock} from '../../src/functions/lock'
 import * as actionStatus from '../../src/functions/action-status'
 
-
 class NotFoundError extends Error {
   constructor(message) {
     super(message)
@@ -117,9 +116,15 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment)).toStrictEqual(
-    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
-  )
+  expect(
+    await lock(octokit, context, ref, 123, false, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: true
+  })
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: production-branch-deploy-lock'
   )
@@ -178,9 +183,13 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
 
   expect(
     await lock(octokit, context, null, null, false, environment, false, true)
-  ).toStrictEqual(
-    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
-  )
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: true
+  })
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: production-branch-deploy-lock'
   )
@@ -217,7 +226,7 @@ test('Determines that another user has the lock and exits - during a lock claim 
       link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
       reason: 'Testing my new feature with lots of cats',
       sticky: true,
-      unlock_command: '.unlock production',
+      unlock_command: '.unlock production'
     },
     status: false
   })
@@ -267,7 +276,7 @@ test('Determines that another user has the lock and exits - during a direct lock
       link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
       reason: 'Testing my new feature with lots of cats',
       sticky: true,
-      unlock_command: '.unlock production',
+      unlock_command: '.unlock production'
     },
     status: false
   })
@@ -302,25 +311,23 @@ test('Determines that another user has the lock and exits - headless', async () 
   }
   expect(
     await lock(octokit, context, ref, 123, true, environment, false, true)
-  ).toStrictEqual(
-    {
-      status: false,
+  ).toStrictEqual({
+    status: false,
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: {
+      branch: 'octocats-everywhere',
+      created_at: '2022-06-14T21:12:14.041Z',
+      created_by: 'octocat',
       environment: 'production',
       global: false,
-      globalFlag: '--global',
-      lockData: {
-        branch: 'octocats-everywhere',
-        created_at: '2022-06-14T21:12:14.041Z',
-        created_by: 'octocat',
-        environment: 'production',
-        global: false,
-        sticky: true,
-        unlock_command: '.unlock production',
-        reason: 'Testing my new feature with lots of cats',
-        link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456'
-      }
+      sticky: true,
+      unlock_command: '.unlock production',
+      reason: 'Testing my new feature with lots of cats',
+      link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456'
     }
-  )
+  })
 })
 
 test('Request detailsOnly on the lock file and gets lock file data successfully', async () => {
@@ -411,9 +418,15 @@ test('Request detailsOnly on the lock file when no branch exists', async () => {
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment, true)).toStrictEqual(
-    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": null}
-  )
+  expect(
+    await lock(octokit, context, ref, 123, false, environment, true)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: null
+  })
 })
 
 test('Determines that the lock request is coming from current owner of the lock and exits - non-sticky', async () => {
@@ -579,9 +592,15 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, true, environment)).toStrictEqual(
-    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
-  )
+  expect(
+    await lock(octokit, context, ref, 123, true, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: true
+  })
   expect(infoMock).toHaveBeenCalledWith('deployment lock obtained')
   expect(infoMock).toHaveBeenCalledWith('deployment lock is sticky')
   expect(infoMock).toHaveBeenCalledWith(
@@ -591,9 +610,15 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
 
 test('successfully obtains a deployment lock (sticky) by creating the branch and lock file - with an empty --reason', async () => {
   context.payload.comment.body = '.lock --reason'
-  expect(await lock(octokit, context, ref, 123, true, environment)).toStrictEqual(
-    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
-  )
+  expect(
+    await lock(octokit, context, ref, 123, true, environment)
+  ).toStrictEqual({
+    environment: 'production',
+    global: false,
+    globalFlag: '--global',
+    lockData: null,
+    status: true
+  })
   expect(infoMock).toHaveBeenCalledWith('deployment lock obtained')
   expect(infoMock).toHaveBeenCalledWith('deployment lock is sticky')
   expect(infoMock).toHaveBeenCalledWith(
@@ -737,7 +762,9 @@ test('Determines that another user has the lock (GLOBAL) and exits - during a di
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, true, 'global', false, false)).toStrictEqual({
+  expect(
+    await lock(octokit, context, ref, 123, true, 'global', false, false)
+  ).toStrictEqual({
     lockData: {
       branch: 'octocats-everywhere',
       created_at: '2022-06-14T21:12:14.041Z',
@@ -794,9 +821,13 @@ test('successfully obtains a GLOBAL deployment lock (sticky) by creating the bra
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, true, 'global')).toStrictEqual(
-    {"environment": "global", "global": true, "globalFlag": "--global", "lockData": null, "status": true}
-  )
+  expect(await lock(octokit, context, ref, 123, true, 'global')).toStrictEqual({
+    environment: 'global',
+    global: true,
+    globalFlag: '--global',
+    lockData: null,
+    status: true
+  })
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: global-branch-deploy-lock'
   )

@@ -9980,7 +9980,8 @@ const LOCK_METADATA = {
 
 
 // Constants for the lock file
-const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_BRANCH_SUFFIX = LOCK_METADATA.lockBranchSuffix
+const GLOBAL_LOCK_BRANCH = LOCK_METADATA.globalLockBranch
 const LOCK_FILE = LOCK_METADATA.lockFile
 const LOCK_COMMIT_MSG = LOCK_METADATA.lockCommitMsg
 const BASE_URL = process.env.GITHUB_SERVER_URL
@@ -10042,21 +10043,38 @@ async function createLock(
     path: LOCK_FILE,
     message: LOCK_COMMIT_MSG,
     content: Buffer.from(JSON.stringify(lockData)).toString('base64'),
-    branch: LOCK_BRANCH
+    branch: await constructBranchName(environment, global)
   })
+
+  core.info(`global lock: ${global}`)
 
   // Write a log message stating the lock has been claimed
   core.info('deployment lock obtained')
+
   // If the lock is sticky, always leave a comment
   if (sticky) {
     core.info('deployment lock is sticky')
 
+    // create a special comment section for global locks
+    let globalMsg = ''
+    let lockMsg
+    if (global === true) {
+      globalMsg =
+        'This is a **global** deploy lock - All environments are now locked'
+      lockMsg = '**globally**'
+      core.setOutput('global_lock_claimed', 'true')
+    } else {
+      lockMsg = `to the \`${environment}\` environment`
+    }
+
     const comment = lib_default()(`
     ### 🔒 Deployment Lock Claimed
 
-    You are now the only user that can trigger deployments until the deployment lock is removed
+    ${globalMsg}
+    
+    You are now the only user that can trigger deployments ${lockMsg} until the deployment lock is removed
 
-    > This lock is _sticky_ and will persist until someone runs \`.unlock\`
+    > This lock is _sticky_ and will persist until someone runs \`${lockData.unlock_command}\`
     `)
 
     // If headless, exit here
@@ -10072,6 +10090,20 @@ async function createLock(
 
   // Return the result of the lock file creation
   return result
+}
+
+// Helper function to construct the branch name
+// :param environment: The name of the environment
+// :param global: A bool indicating whether the lock is global or not
+// :returns: The branch name (String)
+async function constructBranchName(environment, global) {
+  // If the lock is global, return the global lock branch name
+  if (global === true) {
+    return GLOBAL_LOCK_BRANCH
+  }
+
+  // If the lock is not global, return the environment-specific lock branch name
+  return `${environment}-${LOCK_BRANCH_SUFFIX}`
 }
 
 // Helper function to construct the unlock command
@@ -10377,7 +10409,7 @@ async function lock(
   const globalFlag = core.getInput('global_lock_flag').trim()
 
   // construct the lock branch name
-  const branchName = `${environment}-${LOCK_BRANCH}`
+  const branchName = `${environment}-${LOCK_BRANCH_SUFFIX}`
 
   // lock debug info
   core.debug(`detected lock env: ${environment}`)
@@ -10410,13 +10442,13 @@ async function lock(
   if (globalLockData === false && detailsOnly === true && global === true) {
     // If the global lock file doesn't exist and this is a detailsOnly request for the global lock return null
     return {
-      status: null,
+      status: 'details-only',
       lockData: null,
       globalFlag,
       environment,
       global
     }
-  } else if (globalLockData && detailsOnly) {
+  } else if (globalLockData && detailsOnly === true) {
     // If the lock file exists and this is a detailsOnly request for the global lock, return the lock data
     return {
       status: 'details-only',
@@ -10439,7 +10471,13 @@ async function lock(
     )
     if (globalLockOwner === false) {
       // If the requestor is not the owner of the global lock, return false
-      return {status: false, lockData: null, globalFlag, environment, global}
+      return {
+        status: false,
+        lockData: globalLockData,
+        globalFlag,
+        environment,
+        global
+      }
     } else {
       core.info('requestor is the owner of the global lock - continuing checks')
     }
@@ -10482,7 +10520,8 @@ async function lock(
         sticky,
         environment,
         global,
-        reactionId
+        reactionId,
+        headless
       )
       return {status: true, lockData: null, globalFlag, environment, global}
     } else {
@@ -10531,7 +10570,8 @@ async function lock(
     sticky,
     environment,
     global,
-    reactionId
+    reactionId,
+    headless
   )
   return {status: true, lockData: null, globalFlag, environment, global}
 }
@@ -10543,7 +10583,7 @@ async function lock(
 
 
 // Constants for the lock file
-const unlock_LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
 
 // Helper function for releasing a deployment lock
 // :param octokit: The octokit client
@@ -10574,7 +10614,7 @@ async function unlock(
     // Delete the lock branch
     const result = await octokit.rest.git.deleteRef({
       ...context.repo,
-      ref: `heads/${environment}-${unlock_LOCK_BRANCH}`
+      ref: `heads/${environment}-${LOCK_BRANCH}`
     })
 
     // If the lock was successfully released, return true
@@ -10587,7 +10627,7 @@ async function unlock(
       }
 
       // construct the branch name and success message text
-      const branchName = `${environment}-${unlock_LOCK_BRANCH}`
+      const branchName = `${environment}-${LOCK_BRANCH}`
       var successText = ''
       if (global === true) {
         successText = '`global`'
@@ -10615,7 +10655,7 @@ async function unlock(
       return true
     } else {
       // If the lock was not successfully released, return false and log the HTTP code
-      const comment = `failed to delete lock branch: ${environment}-${unlock_LOCK_BRANCH} - HTTP: ${result.status}`
+      const comment = `failed to delete lock branch: ${environment}-${LOCK_BRANCH} - HTTP: ${result.status}`
       core.info(comment)
 
       // If headless, exit here
@@ -11077,7 +11117,7 @@ async function run() {
             ### Lock Details 🔒
 
             The deployment lock is currently claimed by __${lockData.created_by}__
-        
+
             - __Reason__: \`${lockData.reason}\`
             - __Branch__: \`${lockData.branch}\`
             - __Created At__: \`${lockData.created_at}\`
@@ -11085,9 +11125,9 @@ async function run() {
             - __Sticky__: \`${lockData.sticky}\`
             - __Lock Set Link__: [click here](${lockData.link})
             - __Lock Link__: [click here](${main_BASE_URL}/${owner}/${repo}/blob/${main_LOCK_BRANCH}/${main_LOCK_FILE})
-        
+
             The current lock has been active for \`${totalTime}\`
-        
+
             > If you need to release the lock, please comment \`${unlock_trigger}\`
             `)
 
@@ -11096,8 +11136,7 @@ async function run() {
           github.context,
           octokit,
           reactRes.data.id,
-          // eslint-disable-next-line no-regex-spaces
-          lockMessage.replace(new RegExp('    ', 'g'), ''),
+          lockMessage,
           true,
           true
         )
@@ -11108,9 +11147,9 @@ async function run() {
       } else if (lockData === null) {
         const lockMessage = lib_default()(`
             ### Lock Details 🔒
-        
+
             No active deployment locks found for the \`${owner}/${repo}\` repository
-        
+
             > If you need to create a lock, please comment \`${lock_trigger}\`
             `)
 
@@ -11118,8 +11157,7 @@ async function run() {
           github.context,
           octokit,
           reactRes.data.id,
-          // eslint-disable-next-line no-regex-spaces
-          lockMessage.replace(new RegExp('    ', 'g'), ''),
+          lockMessage,
           true,
           true
         )

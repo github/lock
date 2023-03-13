@@ -496,7 +496,13 @@ export async function lock(
     )
     if (globalLockOwner === false) {
       // If the requestor is not the owner of the global lock, return false
-      return {status: false, lockData: globalLockData, globalFlag, environment, global}
+      return {
+        status: false,
+        lockData: globalLockData,
+        globalFlag,
+        environment,
+        global
+      }
     } else {
       core.info('requestor is the owner of the global lock - continuing checks')
     }
