@@ -27,6 +27,7 @@ This section goes into detail on how you can use this Action in your own workflo
 | ----- | --------- | ------- | ----------- |
 | `github_token` | `true` | `${{ github.token }}` | The GitHub token used to create an authenticated client - Provided for you by default! |
 | `environment` | `true` | `"production"` | The explict environment to apply locking actions to when running in headless mode - OR the default environment to use when running in the context of IssueOps commands in a comment - Examples: production, development, etc - Use "global" for the global lock environment |
+| `environment_targets` | `false` | `"production,development,staging"` | Optional (or additional) target environments to select for use with lock/unlock. Example, "production,development,staging". Example  usage: `.lock development`, `.lock production`, `.unlock staging` |
 | `reaction` | `false` | `eyes` | If set, the specified emoji "reaction" is put on the comment to indicate that the trigger was detected. For example, "rocket" or "eyes" |
 | `lock_trigger` | `false` | `.lock` | The string to look for in comments as an IssueOps lock trigger. Used for locking branch deployments on a specific branch. Example: "lock" |
 | `unlock_trigger` | `false` | `.unlock` | The string to look for in comments as an IssueOps unlock trigger. Used for unlocking branch deployments. Example: "unlock" |
@@ -52,6 +53,7 @@ If you wish to use this Action via a comment on a pull request, simply omit the 
 | `branch` | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
 | `global_lock_claimed` | The string "true" if the global lock was claimed |
 | `global_lock_released` | The string "true" if the global lock was released |
+| `lock_environment` | When running in headless mode and the "mode" is set to "check", this output will be the environment name that holds the lock, otherwise it will be empty |
 
 ## Examples 📖
 
