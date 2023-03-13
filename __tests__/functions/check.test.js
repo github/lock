@@ -1,3 +1,4 @@
+/* eslint-disable no-extra-semi */
 import * as core from '@actions/core'
 import {check} from '../../src/functions/check'
 
@@ -71,7 +72,7 @@ test('successfully checks for a production lock and does not find a lock branch'
 })
 
 test('successfully checks for a production lock and finds a global lock instead', async () => {
-  (octokit.rest.repos.getBranch = jest
+  ;(octokit.rest.repos.getBranch = jest
     .fn()
     .mockReturnValueOnce({data: {commit: {sha: 'cba123'}}})), // global lock
     (octokit.rest.getContent = jest
@@ -84,7 +85,7 @@ test('successfully checks for a production lock and finds a global lock instead'
 })
 
 test('successfully checks for a global lock and does not find one', async () => {
-  (octokit.rest.repos.getBranch = jest
+  ;(octokit.rest.repos.getBranch = jest
     .fn()
     .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))), // global lock
     expect(await check(octokit, context, 'global')).toBe(false)
