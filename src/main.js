@@ -47,6 +47,7 @@ export async function run() {
         null, // ref
         null, // reactionId
         false, // sticky
+        environment, // environment
         false, // detailsOnly
         true // headless
       )
@@ -55,6 +56,7 @@ export async function run() {
       await unlock(
         octokit, // octokit client
         context, // context object
+        environment, // environment
         null, // reactionId
         true // headless
       )
@@ -124,6 +126,7 @@ export async function run() {
         null, // ref
         reactRes.data.id, // reactionId
         false, // sticky
+        environment, // environment
         true, // detailsOnly
         false // headless
       )
@@ -209,6 +212,7 @@ export async function run() {
         pr.data.head.ref, // ref
         reactRes.data.id, // reactionId
         true, // sticky
+        environment, // environment
         false, // detailsOnly
         false // headless
       )
@@ -220,6 +224,7 @@ export async function run() {
       await unlock(
         octokit, // octokit client
         context, // context object
+        environment, // environment
         reactRes.data.id, // reactionId
         false // headless
       )

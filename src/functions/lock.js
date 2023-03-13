@@ -132,6 +132,7 @@ async function findReason(context, sticky) {
 // :param ref: The branch which requested the lock / deployment
 // :param reactionId: The ID of the reaction to add to the issue comment (use if the lock is already claimed or if we claimed it with 'sticky')
 // :param sticky: A bool indicating whether the lock is sticky or not (should persist forever)
+// :param environment: The environment to lock
 // :param detailsOnly: A bool indicating whether to only return the details of the lock and not alter its state
 // :param headless: A bool indicating whether the lock is being claimed from a headless run or not
 // :returns: true if the lock was successfully claimed, false if already locked or it fails, 'owner' if the requestor is the one who owns the lock, or null if this is a detailsOnly request and the lock was not found
@@ -141,6 +142,7 @@ export async function lock(
   ref,
   reactionId,
   sticky,
+  environment,
   detailsOnly = false,
   headless = false
 ) {
