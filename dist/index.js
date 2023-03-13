@@ -10191,8 +10191,16 @@ async function createBranch(octokit, context, branchName) {
 // :param lockData: The lock file contents
 // :param sticky: A bool indicating whether the lock is sticky or not (should persist forever) - non-sticky locks are inherent from deployments
 // :param reactionId: The ID of the reaction that triggered the lock request
+// :param headless: A bool indicating whether the lock request was headless or not
 // :return: true if the lock owner is the requestor, false if not
-async function checkLockOwner(octokit, context, lockData, sticky, reactionId) {
+async function checkLockOwner(
+  octokit,
+  context,
+  lockData,
+  sticky,
+  reactionId,
+  headless = false
+) {
   // If the requestor is the one who owns the lock, return 'owner'
   if (lockData.created_by === context.actor) {
     core.info(`${context.actor} is the owner of the lock`)
@@ -10224,6 +10232,11 @@ async function checkLockOwner(octokit, context, lockData, sticky, reactionId) {
 
         > If you need to release the lock, please comment \`${lockData.unlock_command}\`
         `)
+
+      if (headless === true) {
+        core.info(youOwnItComment)
+        return true
+      }
 
       await actionStatus(
         context,
@@ -10299,11 +10312,11 @@ async function checkLockOwner(octokit, context, lockData, sticky, reactionId) {
   > If you need to release the lock, please comment \`${lockData.unlock_command}\`
   `)
 
-  // Set the action status with the comment
-  await actionStatus(context, octokit, reactionId, comment)
+  // Set the action status with the comment if we are not in headless mode
+  if (headless === false) {
+    await actionStatus(context, octokit, reactionId, comment)
+  }
 
-  // Set the bypass state to true so that the post run logic will not run
-  core.saveState('bypass', 'true')
   core.setFailed(comment)
 
   // Return false to indicate that the lock was not claimed
@@ -10531,7 +10544,8 @@ async function lock(
         context,
         lockData,
         sticky,
-        reactionId
+        reactionId,
+        headless
       )
       if (lockOwner === true) {
         // If the requestor is the one who owns the lock, return 'owner'
