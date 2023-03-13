@@ -5,7 +5,8 @@ import {timeDiff} from './time-diff'
 import {LOCK_METADATA} from './lock-metadata'
 
 // Constants for the lock file
-const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
+const LOCK_BRANCH_SUFFIX = LOCK_METADATA.lockBranchSuffix
+const GLOBAL_LOCK_BRANCH = LOCK_METADATA.globalLockBranch
 const LOCK_FILE = LOCK_METADATA.lockFile
 const LOCK_COMMIT_MSG = LOCK_METADATA.lockCommitMsg
 const BASE_URL = process.env.GITHUB_SERVER_URL
@@ -67,21 +68,38 @@ async function createLock(
     path: LOCK_FILE,
     message: LOCK_COMMIT_MSG,
     content: Buffer.from(JSON.stringify(lockData)).toString('base64'),
-    branch: LOCK_BRANCH
+    branch: await constructBranchName(environment, global)
   })
+
+  core.info(`global lock: ${global}`)
 
   // Write a log message stating the lock has been claimed
   core.info('deployment lock obtained')
+
   // If the lock is sticky, always leave a comment
   if (sticky) {
     core.info('deployment lock is sticky')
 
+    // create a special comment section for global locks
+    let globalMsg = ''
+    let lockMsg
+    if (global === true) {
+      globalMsg =
+        'This is a **global** deploy lock - All environments are now locked'
+      lockMsg = '**globally**'
+      core.setOutput('global_lock_claimed', 'true')
+    } else {
+      lockMsg = `to the \`${environment}\` environment`
+    }
+
     const comment = dedent(`
     ### 🔒 Deployment Lock Claimed
 
-    You are now the only user that can trigger deployments until the deployment lock is removed
+    ${globalMsg}
+    
+    You are now the only user that can trigger deployments ${lockMsg} until the deployment lock is removed
 
-    > This lock is _sticky_ and will persist until someone runs \`.unlock\`
+    > This lock is _sticky_ and will persist until someone runs \`${lockData.unlock_command}\`
     `)
 
     // If headless, exit here
@@ -97,6 +115,20 @@ async function createLock(
 
   // Return the result of the lock file creation
   return result
+}
+
+// Helper function to construct the branch name
+// :param environment: The name of the environment
+// :param global: A bool indicating whether the lock is global or not
+// :returns: The branch name (String)
+async function constructBranchName(environment, global) {
+  // If the lock is global, return the global lock branch name
+  if (global === true) {
+    return GLOBAL_LOCK_BRANCH
+  }
+
+  // If the lock is not global, return the environment-specific lock branch name
+  return `${environment}-${LOCK_BRANCH_SUFFIX}`
 }
 
 // Helper function to construct the unlock command
@@ -402,7 +434,7 @@ export async function lock(
   const globalFlag = core.getInput('global_lock_flag').trim()
 
   // construct the lock branch name
-  const branchName = `${environment}-${LOCK_BRANCH}`
+  const branchName = `${environment}-${LOCK_BRANCH_SUFFIX}`
 
   // lock debug info
   core.debug(`detected lock env: ${environment}`)

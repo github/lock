@@ -772,6 +772,36 @@ test('Determines that another user has the lock (GLOBAL) and exits - during a di
   )
 })
 
+test('successfully obtains a GLOBAL deployment lock (sticky) by creating the branch and lock file', async () => {
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        createOrUpdateFileContents: jest.fn().mockReturnValue({}),
+        getContent: jest
+          .fn()
+          .mockRejectedValueOnce(new NotFoundError('file not found'))
+      },
+      git: {
+        createRef: jest.fn().mockReturnValue({status: 201})
+      },
+      issues: {
+        createComment: jest.fn().mockReturnValue({})
+      }
+    }
+  }
+  expect(await lock(octokit, context, ref, 123, true, 'global')).toStrictEqual(
+    {"environment": "global", "global": true, "globalFlag": "--global", "lockData": null, "status": true}
+  )
+  expect(infoMock).toHaveBeenCalledWith(
+    'Created lock branch: global-branch-deploy-lock'
+  )
+})
+
 test('throws an error if an unhandled exception occurs', async () => {
   octokit.rest.repos.getBranch = jest
     .fn()
