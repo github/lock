@@ -13,9 +13,6 @@ import * as github from '@actions/github'
 import {context} from '@actions/github'
 import dedent from 'dedent-js'
 
-// Lock info flags
-const LOCK_INFO_FLAGS = LOCK_METADATA.lockInfoFlags
-
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 export async function run() {
   try {
@@ -128,7 +125,9 @@ export async function run() {
 
     // If the lock request is only for details
     if (
-      LOCK_INFO_FLAGS.some(substring => body.includes(substring) === true) ||
+      LOCK_METADATA.lockInfoFlags.some(
+        substring => body.includes(substring) === true
+      ) ||
       isLockInfoAlias === true
     ) {
       // Get the lock details from the lock file
