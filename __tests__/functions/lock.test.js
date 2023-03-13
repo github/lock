@@ -294,21 +294,31 @@ test('Determines that another user has the lock and exits - headless', async () 
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
         getContent: jest
           .fn()
-          .mockReturnValue({data: {content: lockBase64Octocat}})
+          .mockRejectedValueOnce(new NotFoundError('file not found'))
+          .mockReturnValueOnce({data: {content: lockBase64Octocat}})
       }
     }
   }
   expect(
     await lock(octokit, context, ref, 123, true, environment, false, true)
-  ).toStrictEqual({
-    environment: 'production',
-    global: false,
-    globalFlag: '--global',
-    lockData: null,
-    status: false
-  })
-  expect(infoMock).toHaveBeenCalledWith(
-    expect.stringMatching(/The current lock has been active/)
+  ).toStrictEqual(
+    {
+      status: false,
+      environment: 'production',
+      global: false,
+      globalFlag: '--global',
+      lockData: {
+        branch: 'octocats-everywhere',
+        created_at: '2022-06-14T21:12:14.041Z',
+        created_by: 'octocat',
+        environment: 'production',
+        global: false,
+        sticky: true,
+        unlock_command: '.unlock production',
+        reason: 'Testing my new feature with lots of cats',
+        link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456'
+      }
+    }
   )
 })
 
