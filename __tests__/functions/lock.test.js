@@ -104,7 +104,10 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
           .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
           .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
-        createOrUpdateFileContents: jest.fn().mockReturnValue({})
+        createOrUpdateFileContents: jest.fn().mockReturnValue({}),
+        getContent: jest
+          .fn()
+          .mockRejectedValue(new NotFoundError('file not found'))
       },
       git: {
         createRef: jest.fn().mockReturnValue({status: 201})
@@ -114,7 +117,9 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment)).toBe(true)
+  expect(await lock(octokit, context, ref, 123, false, environment)).toStrictEqual(
+    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
+  )
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: production-branch-deploy-lock'
   )
@@ -129,7 +134,10 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
           .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
           .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
-        createOrUpdateFileContents: jest.fn().mockReturnValue({})
+        createOrUpdateFileContents: jest.fn().mockReturnValue({}),
+        getContent: jest
+          .fn()
+          .mockRejectedValue(new NotFoundError('file not found'))
       },
       git: {
         createRef: jest.fn().mockReturnValue({status: 201})
@@ -142,7 +150,9 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
 
   expect(
     await lock(octokit, context, null, null, false, environment, false, true)
-  ).toBe(true)
+  ).toStrictEqual(
+    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
+  )
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: production-branch-deploy-lock'
   )
@@ -337,7 +347,10 @@ test('Request detailsOnly on the lock file when no branch exists', async () => {
           .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
           .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
-        createOrUpdateFileContents: jest.fn().mockReturnValue({})
+        createOrUpdateFileContents: jest.fn().mockReturnValue({}),
+        getContent: jest
+          .fn()
+          .mockRejectedValue(new NotFoundError('file not found'))
       },
       git: {
         createRef: jest.fn().mockReturnValue({status: 201})
@@ -347,8 +360,8 @@ test('Request detailsOnly on the lock file when no branch exists', async () => {
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, false, environment, true)).toBe(
-    null
+  expect(await lock(octokit, context, ref, 123, false, environment, true)).toStrictEqual(
+    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": null}
   )
 })
 
@@ -502,7 +515,10 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
           .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))
           .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
         get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
-        createOrUpdateFileContents: jest.fn().mockReturnValue({})
+        createOrUpdateFileContents: jest.fn().mockReturnValue({}),
+        getContent: jest
+          .fn()
+          .mockRejectedValue(new NotFoundError('file not found'))
       },
       git: {
         createRef: jest.fn().mockReturnValue({status: 201})
@@ -512,7 +528,9 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
       }
     }
   }
-  expect(await lock(octokit, context, ref, 123, true, environment)).toBe(true)
+  expect(await lock(octokit, context, ref, 123, true, environment)).toStrictEqual(
+    {"environment": "production", "global": false, "globalFlag": "--global", "lockData": null, "status": true}
+  )
   expect(infoMock).toHaveBeenCalledWith('deployment lock obtained')
   expect(infoMock).toHaveBeenCalledWith('deployment lock is sticky')
   expect(infoMock).toHaveBeenCalledWith(
