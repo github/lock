@@ -10,12 +10,12 @@ class NotFoundError extends Error {
   }
 }
 
-// class BigBadError extends Error {
-//   constructor(message) {
-//     super(message)
-//     this.status = 500
-//   }
-// }
+class BigBadError extends Error {
+  constructor(message) {
+    super(message)
+    this.status = 500
+  }
+}
 
 const environment = 'production'
 
@@ -31,7 +31,7 @@ const lockBase64Octocat =
 const saveStateMock = jest.spyOn(core, 'saveState')
 const setFailedMock = jest.spyOn(core, 'setFailed')
 const infoMock = jest.spyOn(core, 'info')
-// const debugMock = jest.spyOn(core, 'debug')
+const debugMock = jest.spyOn(core, 'debug')
 const setOutputMock = jest.spyOn(core, 'setOutput')
 
 var octokit
@@ -123,6 +123,34 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
   expect(infoMock).toHaveBeenCalledWith(
     'Created lock branch: production-branch-deploy-lock'
   )
+})
+
+test('Request detailsOnly on the lock file when no branch exists and hits an error when trying to check the branch', async () => {
+  context.payload.comment.body = '.lock --details'
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockRejectedValueOnce(new BigBadError('oh no - 500')),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        createOrUpdateFileContents: jest.fn().mockReturnValue({}),
+        getContent: jest
+          .fn()
+          .mockRejectedValue(new NotFoundError('file not found'))
+      }
+    }
+  }
+  try {
+    await lock(octokit, context, ref, 123, null, environment, true)
+  } catch (error) {
+    expect(error.message).toBe('Error: oh no - 500')
+    expect(debugMock).toHaveBeenCalledWith(`detected lock env: ${environment}`)
+    expect(debugMock).toHaveBeenCalledWith(`detected lock global: false`)
+    expect(debugMock).toHaveBeenCalledWith(
+      `constructed lock branch: ${environment}-branch-deploy-lock`
+    )
+  }
 })
 
 test('successfully obtains a deployment lock (non-sticky) by creating the branch and lock file in headless mode', async () => {
