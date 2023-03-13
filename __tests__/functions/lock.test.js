@@ -10,15 +10,14 @@ class NotFoundError extends Error {
   }
 }
 
-class BigBadError extends Error {
-  constructor(message) {
-    super(message)
-    this.status = 500
-  }
-}
+// class BigBadError extends Error {
+//   constructor(message) {
+//     super(message)
+//     this.status = 500
+//   }
+// }
 
 const environment = 'production'
-const globalFlag = '--global'
 
 const lockBase64Monalisa =
   'ewogICAgInJlYXNvbiI6IG51bGwsCiAgICAiYnJhbmNoIjogImNvb2wtbmV3LWZlYXR1cmUiLAogICAgImNyZWF0ZWRfYXQiOiAiMjAyMi0wNi0xNVQyMToxMjoxNC4wNDFaIiwKICAgICJjcmVhdGVkX2J5IjogIm1vbmFsaXNhIiwKICAgICJzdGlja3kiOiBmYWxzZSwKICAgICJlbnZpcm9ubWVudCI6ICJwcm9kdWN0aW9uIiwKICAgICJ1bmxvY2tfY29tbWFuZCI6ICIudW5sb2NrIHByb2R1Y3Rpb24iLAogICAgImdsb2JhbCI6IGZhbHNlLAogICAgImxpbmsiOiAiaHR0cHM6Ly9naXRodWIuY29tL3Rlc3Qtb3JnL3Rlc3QtcmVwby9wdWxsLzMjaXNzdWVjb21tZW50LTEyMyIKfQo='
@@ -36,11 +35,6 @@ const infoMock = jest.spyOn(core, 'info')
 const setOutputMock = jest.spyOn(core, 'setOutput')
 
 var octokit
-var octokitOtherUserHasLock
-var createdLock
-var monalisaOwner
-var noLockFound
-var failedToCreateLock
 var actionStatusSpy
 
 beforeEach(() => {
@@ -60,45 +54,6 @@ beforeEach(() => {
   process.env.INPUT_ENVIRONMENT = 'production'
   process.env.INPUT_LOCK_INFO_ALIAS = '.wcid'
 
-  createdLock = {
-    lockData: null,
-    status: true,
-    globalFlag,
-    environment,
-    global: false
-  }
-  monalisaOwner = {
-    lockData: {
-      branch: 'cool-new-feature',
-      created_at: '2022-06-15T21:12:14.041Z',
-      created_by: 'monalisa',
-      environment: 'production',
-      global: false,
-      link: 'https://github.com/test-org/test-repo/pull/3#issuecomment-123',
-      reason: null,
-      sticky: false,
-      unlock_command: '.unlock production'
-    },
-    status: 'owner',
-    globalFlag,
-    environment,
-    global: false
-  }
-  noLockFound = {
-    lockData: null,
-    status: null,
-    globalFlag,
-    environment,
-    global: false
-  }
-  failedToCreateLock = {
-    lockData: null,
-    status: false,
-    globalFlag,
-    environment,
-    global: false
-  }
-
   octokit = {
     rest: {
       repos: {
@@ -117,20 +72,6 @@ beforeEach(() => {
       },
       issues: {
         createComment: jest.fn().mockReturnValue({})
-      }
-    }
-  }
-
-  octokitOtherUserHasLock = {
-    rest: {
-      repos: {
-        getBranch: jest
-          .fn()
-          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
-        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
-        getContent: jest
-          .fn()
-          .mockReturnValueOnce({data: {content: lockBase64Octocat}})
       }
     }
   }
