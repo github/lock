@@ -507,7 +507,8 @@ export async function lock(
         sticky,
         environment,
         global,
-        reactionId
+        reactionId,
+        headless
       )
       return {status: true, lockData: null, globalFlag, environment, global}
     } else {
@@ -556,7 +557,8 @@ export async function lock(
     sticky,
     environment,
     global,
-    reactionId
+    reactionId,
+    headless
   )
   return {status: true, lockData: null, globalFlag, environment, global}
 }
