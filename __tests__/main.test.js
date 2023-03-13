@@ -4,6 +4,7 @@ import * as validPermissions from '../src/functions/valid-permissions'
 import * as lock from '../src/functions/lock'
 import * as unlock from '../src/functions/unlock'
 import * as check from '../src/functions/check'
+import * as environmentTargets from '../src/functions/environment-targets'
 // import * as actionStatus from '../src/functions/action-status'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
@@ -86,6 +87,11 @@ beforeEach(() => {
   jest.spyOn(validPermissions, 'validPermissions').mockImplementation(() => {
     return true
   })
+  jest
+    .spyOn(environmentTargets, 'environmentTargets')
+    .mockImplementation(() => {
+      return true
+    })
 })
 
 test('runs successfully in lock mode', async () => {
@@ -164,6 +170,16 @@ test('successfully runs in lock mode from a comment and fails permissions', asyn
   jest.spyOn(validPermissions, 'validPermissions').mockImplementation(() => {
     return false
   })
+  expect(await run()).toBe('failure')
+  expect(setOutputMock).toHaveBeenCalledWith('type', 'lock')
+})
+
+test('successfully runs in lock mode from a comment and fails due to a bad env', async () => {
+  jest
+    .spyOn(environmentTargets, 'environmentTargets')
+    .mockImplementation(() => {
+      return false
+    })
   expect(await run()).toBe('failure')
   expect(setOutputMock).toHaveBeenCalledWith('type', 'lock')
 })

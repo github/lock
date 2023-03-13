@@ -8,6 +8,7 @@ import {unlock} from './functions/unlock'
 import {check} from './functions/check'
 import {timeDiff} from './functions/time-diff'
 import {LOCK_METADATA} from './functions/lock-metadata'
+import {environmentTargets} from './functions/environment-targets'
 import * as github from '@actions/github'
 import {context} from '@actions/github'
 import dedent from 'dedent-js'
@@ -32,6 +33,7 @@ export async function run() {
     const lock_info_alias = core.getInput('lock_info_alias')
     const lock_mode = core.getInput('mode')
     const environment = core.getInput('environment') // the env to lock/unlock/check
+    const defaultEnvironment = core.getInput('default_environment') // the default env to use on IssueOps commands
 
     // Get variables from the event context
     const {owner, repo} = context.repo
@@ -114,6 +116,22 @@ export async function run() {
       return 'failure'
     }
 
+    // if we get here, this is a flow from an issue comment and we need to determine the environment from the comment body
+    const environmentTarget = await environmentTargets(
+      defaultEnvironment,
+      body,
+      lock_trigger,
+      unlock_trigger,
+      context,
+      octokit,
+      reactRes.data.id
+    )
+
+    // if no environment was found, return a failure
+    if (!environmentTarget) {
+      return 'failure'
+    }
+
     // If the lock request is only for details
     if (
       LOCK_INFO_FLAGS.some(substring => body.includes(substring) === true) ||
@@ -126,7 +144,7 @@ export async function run() {
         null, // ref
         reactRes.data.id, // reactionId
         false, // sticky
-        environment, // environment
+        environmentTarget, // environment
         true, // detailsOnly
         false // headless
       )
@@ -212,7 +230,7 @@ export async function run() {
         pr.data.head.ref, // ref
         reactRes.data.id, // reactionId
         true, // sticky
-        environment, // environment
+        environmentTarget, // environment
         false, // detailsOnly
         false // headless
       )
@@ -224,7 +242,7 @@ export async function run() {
       await unlock(
         octokit, // octokit client
         context, // context object
-        environment, // environment
+        environmentTarget, // environment
         reactRes.data.id, // reactionId
         false // headless
       )
