@@ -10130,6 +10130,7 @@ async function lock(
       reason = null
     }
   } else {
+    core.setOutput('headless', 'false')
     reason = await findReason(context, sticky)
   }
 
@@ -10511,6 +10512,9 @@ async function checkLockFile(octokit, context, branch) {
 // :param environment: The environment to check for a lock
 // :returns: true if the lock exists, false if it does not
 async function check(octokit, context, environment) {
+  // check is always a headless run
+  core.setOutput('headless', 'true')
+
   // first, check if a global lock exists
   const globalLockExists = await checkLockFile(
     octokit,

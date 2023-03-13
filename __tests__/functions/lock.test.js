@@ -22,6 +22,11 @@ const saveStateMock = jest.spyOn(core, 'saveState')
 const setFailedMock = jest.spyOn(core, 'setFailed')
 const infoMock = jest.spyOn(core, 'info')
 const setOutputMock = jest.spyOn(core, 'setOutput')
+const actionStatusSpy = jest
+  .spyOn(actionStatus, 'actionStatus')
+  .mockImplementation(() => {
+    return undefined
+  })
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -41,8 +46,8 @@ const octokit = {
       get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
       createOrUpdateFileContents: jest.fn().mockReturnValue({}),
       getContent: jest
-          .fn()
-          .mockReturnValue({data: {content: lockBase64Octocat}})
+        .fn()
+        .mockReturnValue({data: {content: lockBase64Octocat}})
     },
     git: {
       createRef: jest.fn().mockReturnValue({status: 201})
@@ -129,11 +134,6 @@ test('successfully obtains a deployment lock (non-sticky) by creating the branch
 })
 
 test('Determines that another user has the lock and exits - during a lock claim on deployment', async () => {
-  const actionStatusSpy = jest
-    .spyOn(actionStatus, 'actionStatus')
-    .mockImplementation(() => {
-      return undefined
-    })
   const octokit = {
     rest: {
       repos: {
@@ -165,11 +165,6 @@ test('Determines that another user has the lock and exits - during a lock claim 
 })
 
 test('Determines that another user has the lock and exits - during a direct lock claim with .lock', async () => {
-  const actionStatusSpy = jest
-    .spyOn(actionStatus, 'actionStatus')
-    .mockImplementation(() => {
-      return undefined
-    })
   const octokit = {
     rest: {
       repos: {
@@ -382,7 +377,8 @@ test('Creates a lock when the lock branch exists but no lock file exists', async
 })
 
 test('successfully obtains a deployment lock (sticky) by creating the branch and lock file - with a --reason', async () => {
-  context.payload.comment.body = '.lock --reason testing a super cool new feature'
+  context.payload.comment.body =
+    '.lock --reason testing a super cool new feature'
   const octokit = {
     rest: {
       repos: {
@@ -420,8 +416,12 @@ test('successfully obtains a deployment lock (sticky) by creating the branch and
 })
 
 test('throws an error if an unhandled exception occurs', async () => {
-  octokit.rest.repos.getBranch = jest.fn().mockRejectedValueOnce(new Error('oh no'))
-  octokit.rest.repos.getContent = jest.fn().mockRejectedValue(new Error('oh no'))
+  octokit.rest.repos.getBranch = jest
+    .fn()
+    .mockRejectedValueOnce(new Error('oh no'))
+  octokit.rest.repos.getContent = jest
+    .fn()
+    .mockRejectedValue(new Error('oh no'))
 
   try {
     await lock(octokit, context, ref, 123, true, environment)
