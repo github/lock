@@ -729,7 +729,7 @@ test('Request detailsOnly on the lock file and does not find a lock -- .wcid --g
     await lock(octokit, context, ref, 123, false, 'global', true, false)
   ).toStrictEqual({
     lockData: null,
-    status: 'details-only',
+    status: null,
     environment: 'global',
     globalFlag: '--global',
     global: true
