@@ -13,11 +13,6 @@ import * as github from '@actions/github'
 import {context} from '@actions/github'
 import dedent from 'dedent-js'
 
-// Lock constants
-const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
-const LOCK_FILE = LOCK_METADATA.lockFile
-const BASE_URL = process.env.GITHUB_SERVER_URL
-
 // Lock info flags
 const LOCK_INFO_FLAGS = LOCK_METADATA.lockInfoFlags
 
@@ -137,7 +132,7 @@ export async function run() {
       isLockInfoAlias === true
     ) {
       // Get the lock details from the lock file
-      const lockData = await lock(
+      const lockResponse = await lock(
         octokit, // octokit client
         context, // context object
         null, // ref
@@ -148,32 +143,55 @@ export async function run() {
         false // headless
       )
 
+      // extract values from the lock response
+      const lockData = lockResponse.lockData
+      const lockStatus = lockResponse.status
+
       // If a lock was found when getting the lock details
-      if (lockData !== null) {
+      if (lockStatus !== null) {
         // Find the total time since the lock was created
         const totalTime = await timeDiff(
           lockData.created_at,
           new Date().toISOString()
         )
 
+        // special comment for global deploy locks
+        let globalMsg = ''
+        let environmentMsg = `- __Environment__: \`${lockData.environment}\``
+        let lockBranchName = `${lockData.environment}-${LOCK_METADATA.lockBranchSuffix}`
+        if (lockData.global === true) {
+          globalMsg = dedent(`
+
+          This is a **global** deploy lock - All environments are currently locked
+
+          `)
+          environmentMsg = dedent(`
+          - __Environments__: \`all\`
+          - __Global__: \`true\`
+          `)
+          core.info('there is a global deployment lock on this repository')
+          lockBranchName = LOCK_METADATA.globalLockBranch
+        }
+
         // Format the lock details message
         const lockMessage = dedent(`
-            ### Lock Details 🔒
+        ### Lock Details 🔒
 
-            The deployment lock is currently claimed by __${lockData.created_by}__
+        The deployment lock is currently claimed by __${lockData.created_by}__${globalMsg}
 
-            - __Reason__: \`${lockData.reason}\`
-            - __Branch__: \`${lockData.branch}\`
-            - __Created At__: \`${lockData.created_at}\`
-            - __Created By__: \`${lockData.created_by}\`
-            - __Sticky__: \`${lockData.sticky}\`
-            - __Lock Set Link__: [click here](${lockData.link})
-            - __Lock Link__: [click here](${BASE_URL}/${owner}/${repo}/blob/${LOCK_BRANCH}/${LOCK_FILE})
+        - __Reason__: \`${lockData.reason}\`
+        - __Branch__: \`${lockData.branch}\`
+        - __Created At__: \`${lockData.created_at}\`
+        - __Created By__: \`${lockData.created_by}\`
+        - __Sticky__: \`${lockData.sticky}\`
+        ${environmentMsg}
+        - __Comment Link__: [click here](${lockData.link})
+        - __Lock Link__: [click here](${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/blob/${lockBranchName}/${LOCK_METADATA.lockFile})
 
-            The current lock has been active for \`${totalTime}\`
+        The current lock has been active for \`${totalTime}\`
 
-            > If you need to release the lock, please comment \`${unlock_trigger}\`
-            `)
+        > If you need to release the lock, please comment \`${lockData.unlock_command}\`
+        `)
 
         // Update the issue comment with the lock details
         await actionStatus(
@@ -188,14 +206,25 @@ export async function run() {
           `the deployment lock is currently claimed by __${lockData.created_by}__`
         )
         // If no lock was found when getting the lock details
-      } else if (lockData === null) {
+      } else if (lockStatus === null) {
+        // format the lock details message
+        var lockCommand
+        var lockTarget
+        if (lockResponse.global) {
+          lockTarget = 'global'
+          lockCommand = `${lock_trigger} ${lockResponse.globalFlag}`
+        } else {
+          lockTarget = lockResponse.environment
+          lockCommand = `${lock_trigger} ${lockTarget}`
+        }
+
         const lockMessage = dedent(`
-            ### Lock Details 🔒
+        ### Lock Details 🔒
 
-            No active deployment locks found for the \`${owner}/${repo}\` repository
+        No active \`${lockTarget}\` deployment locks found for the \`${owner}/${repo}\` repository
 
-            > If you need to create a lock, please comment \`${lock_trigger}\`
-            `)
+        > If you need to create a \`${lockTarget}\` lock, please comment \`${lockCommand}\`
+        `)
 
         await actionStatus(
           context,

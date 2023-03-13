@@ -122,13 +122,65 @@ test('successfully runs in unlock mode from a comment', async () => {
 
 test('successfully runs in lock info mode from a comment', async () => {
   github.context.payload.comment.body = '.wcid'
+  jest.spyOn(lock, 'lock').mockImplementation(() => {
+    return {
+      status: 'details-only',
+      lockData: {
+        branch: 'octocats-everywhere',
+        created_at: '2022-06-14T21:12:14.041Z',
+        created_by: 'octocat',
+        environment: 'production',
+        global: false,
+        link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+        reason: 'Testing my new feature with lots of cats',
+        sticky: true,
+        unlock_command: '.unlock production'
+      }
+    }
+  })
+  expect(await run()).toBe('safe-exit')
+})
+
+test('successfully runs in lock info mode from a comment for a global lock and does not find one', async () => {
+  github.context.payload.comment.body = '.wcid --global'
+  jest.spyOn(lock, 'lock').mockImplementation(() => {
+    return {
+      status: null,
+      environment: null,
+      global: true,
+      lockData: null
+    }
+  })
+  expect(await run()).toBe('safe-exit')
+})
+
+test('successfully runs in lock info mode from a comment for a global lock and does find one', async () => {
+  github.context.payload.comment.body = '.wcid --global'
+  jest.spyOn(lock, 'lock').mockImplementation(() => {
+    return {
+      status: 'details-only',
+      environment: null,
+      global: true,
+      lockData: {
+        branch: 'octocats-everywhere',
+        created_at: '2022-06-14T21:12:14.041Z',
+        created_by: 'octocat',
+        environment: null,
+        global: true,
+        link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+        reason: 'Testing my new feature with lots of cats',
+        sticky: true,
+        unlock_command: '.unlock --global'
+      }
+    }
+  })
   expect(await run()).toBe('safe-exit')
 })
 
 test('successfully runs in lock info mode from a comment and finds no lock', async () => {
   github.context.payload.comment.body = '.wcid'
   jest.spyOn(lock, 'lock').mockImplementation(() => {
-    return null
+    return {status: null}
   })
   expect(await run()).toBe('safe-exit')
 })
