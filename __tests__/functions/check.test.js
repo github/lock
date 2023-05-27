@@ -56,6 +56,19 @@ test('successfully checks for a production lock and finds a lock', async () => {
   expect(await check(octokit, context, environment)).toBe(true)
   expect(setOutputMock).toHaveBeenCalledWith('locked', 'true')
   expect(setOutputMock).toHaveBeenCalledWith('lock_environment', environment)
+  expect(setOutputMock).toHaveBeenCalledWith('created_by', 'octocat')
+  expect(setOutputMock).toHaveBeenCalledWith(
+    'created_at',
+    '2022-06-14T21:12:14.041Z'
+  )
+  expect(setOutputMock).toHaveBeenCalledWith(
+    'reason',
+    'Testing my new feature with lots of cats'
+  )
+  expect(setOutputMock).toHaveBeenCalledWith(
+    'link',
+    'https://github.com/test-org/test-repo/pull/2#issuecomment-456'
+  )
   expect(infoMock).toHaveBeenCalledWith('global lock does not exist')
   expect(infoMock).toHaveBeenCalledWith('production lock exists')
 })
@@ -81,6 +94,19 @@ test('successfully checks for a production lock and finds a global lock instead'
   expect(await check(octokit, context, environment)).toBe(true)
   expect(setOutputMock).toHaveBeenCalledWith('locked', 'true')
   expect(setOutputMock).toHaveBeenCalledWith('lock_environment', 'global')
+  expect(setOutputMock).toHaveBeenCalledWith('created_by', 'octocat')
+  expect(setOutputMock).toHaveBeenCalledWith(
+    'created_at',
+    '2022-06-14T21:12:14.041Z'
+  )
+  expect(setOutputMock).toHaveBeenCalledWith(
+    'reason',
+    'Testing my new feature with lots of cats'
+  )
+  expect(setOutputMock).toHaveBeenCalledWith(
+    'link',
+    'https://github.com/test-org/test-repo/pull/2#issuecomment-456'
+  )
   expect(infoMock).toHaveBeenCalledWith('global lock exists')
 })
 

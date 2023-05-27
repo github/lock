@@ -64,6 +64,14 @@ outputs:
     description: When running in headless mode and the "mode" is set to "check", this output will be the environment name that holds the lock, otherwise it will be empty
   branch:
     description: 'If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty'
+  created_by:
+    description: 'If the mode is set to "check", this output will be the user that holds the lock, otherwise it will be empty'
+  created_at:
+    description: 'If the mode is set to "check", this output will be the ISO 8601 format date that the lock was claimed, otherwise it will be empty'
+  reason:
+    description: 'If the mode is set to "check", this output will be the reason the deployment lock was claimed, otherwise it will be empty'
+  link:
+    description: 'If the mode is set to "check", this output will be the link to the GitHub issue comment or action run that claimed the lock, otherwise it will be empty'
   global_lock_claimed:
     description: 'The string "true" if the global lock was claimed'
   global_lock_released:
