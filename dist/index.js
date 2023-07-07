@@ -10871,6 +10871,22 @@ async function checkLockFile_checkLockFile(octokit, context, branch) {
       core.setOutput('branch', lockData['branch'])
     }
 
+    if (Object.prototype.hasOwnProperty.call(lockData, 'created_by')) {
+      core.setOutput('created_by', lockData['created_by'])
+    }
+
+    if (Object.prototype.hasOwnProperty.call(lockData, 'created_at')) {
+      core.setOutput('created_at', lockData['created_at'])
+    }
+
+    if (Object.prototype.hasOwnProperty.call(lockData, 'reason')) {
+      core.setOutput('reason', lockData['reason'])
+    }
+
+    if (Object.prototype.hasOwnProperty.call(lockData, 'link')) {
+      core.setOutput('link', lockData['link'])
+    }
+
     return true
   } catch (error) {
     // If the lock file doesn't exist, return false
