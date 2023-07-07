@@ -49,8 +49,12 @@ If you wish to use this Action via a comment on a pull request, simply omit the 
 | `type` | The type of trigger which was found - 'lock', 'unlock', or 'info-info-alias' |
 | `comment_body` | The comment body which triggered this action (if it was not headless) |
 | `headless` | The string "true" if the run was headless, otherwise the string "false" - Headless in this context would be if the "mode" was set and the Action was not invoked by a comment on a pull request |
-| `locked` | If the 'mode' is set to 'check', this output is exported to show if the lock is set in a headless run |
+| `locked` | If the "mode" is set to "check", this output is exported to show if the lock is set in a headless run |
 | `branch` | If the mode is set to "check", this output will be the branch name that holds the lock, otherwise it will be empty |
+| `created_by` | If the mode is set to "check", this output will be the user that holds the lock, otherwise it will be empty |
+| `created_at` | If the mode is set to "check", this output will be the ISO 8601 format date that the lock was claimed, otherwise it will be empty |
+| `reason` | If the mode is set to "check", this output will be the reason the deployment lock was claimed, otherwise it will be empty |
+| `link` | If the mode is set to "check", this output will be the link to the GitHub issue comment or action run that claimed the lock, otherwise it will be empty |
 | `global_lock_claimed` | The string "true" if the global lock was claimed |
 | `global_lock_released` | The string "true" if the global lock was released |
 | `lock_environment` | When running in headless mode and the "mode" is set to "check", this output will be the environment name that holds the lock, otherwise it will be empty |
