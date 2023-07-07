@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Need to checkout for testing the Action in this repo
-      - uses: actions/checkout@v3.5.0
+      - uses: actions/checkout@v3
 
       # Lock
       - uses: ./
