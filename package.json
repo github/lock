@@ -60,7 +60,7 @@
     "js-yaml": "^4.1.0",
     "prettier": "3.2.5",
     "@babel/preset-env": "^7.24.3",
-    "babel-core": "^6.26.3",
+    "@babel/core": "^7.24.4",
     "babel-jest": "^29.7.0",
     "make-coverage-badge": "^1.2.0"
   }
