@@ -101,7 +101,11 @@ test('throws an error if an unhandled exception occurs - headless mode', async (
 test('Does not find a deployment lock branch so it lets the user know - headless mode', async () => {
   octokit.rest.git.deleteRef = jest
     .fn()
-    .mockRejectedValue(new NotFoundError('Reference does not exist'))
+    .mockRejectedValue(
+      new NotFoundError(
+        'Reference does not exist - https://docs.github.com/rest/git/refs#delete-a-reference'
+      )
+    )
   expect(await unlock(octokit, context, environment, 123, true)).toBe(
     'no deployment lock currently set - headless'
   )
@@ -163,7 +167,11 @@ test('Does not find a deployment lock branch so it lets the user know', async ()
     })
   octokit.rest.git.deleteRef = jest
     .fn()
-    .mockRejectedValue(new NotFoundError('Reference does not exist'))
+    .mockRejectedValue(
+      new NotFoundError(
+        'Reference does not exist - https://docs.github.com/rest/git/refs#delete-a-reference'
+      )
+    )
   expect(await unlock(octokit, context, environment, 123)).toBe(true)
   expect(actionStatusSpy).toHaveBeenCalledWith(
     context,
@@ -183,7 +191,11 @@ test('Does not find a GLOBAL deployment lock branch so it lets the user know', a
     })
   octokit.rest.git.deleteRef = jest
     .fn()
-    .mockRejectedValue(new NotFoundError('Reference does not exist'))
+    .mockRejectedValue(
+      new NotFoundError(
+        'Reference does not exist - https://docs.github.com/rest/git/refs#delete-a-reference'
+      )
+    )
   expect(await unlock(octokit, context, 'global', 123)).toBe(true)
   expect(actionStatusSpy).toHaveBeenCalledWith(
     context,

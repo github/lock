@@ -2204,7 +2204,7 @@ var import_graphql = __nccwpck_require__(8467);
 var import_auth_token = __nccwpck_require__(334);
 
 // pkg/dist-src/version.js
-var VERSION = "5.1.0";
+var VERSION = "5.2.0";
 
 // pkg/dist-src/index.js
 var noop = () => {
@@ -2371,7 +2371,7 @@ module.exports = __toCommonJS(dist_src_exports);
 var import_universal_user_agent = __nccwpck_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "9.0.4";
+var VERSION = "9.0.5";
 
 // pkg/dist-src/defaults.js
 var userAgent = `octokit-endpoint.js/${VERSION} ${(0, import_universal_user_agent.getUserAgent)()}`;
@@ -2756,7 +2756,7 @@ var import_request3 = __nccwpck_require__(6234);
 var import_universal_user_agent = __nccwpck_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "7.0.2";
+var VERSION = "7.1.0";
 
 // pkg/dist-src/with-defaults.js
 var import_request2 = __nccwpck_require__(6234);
@@ -5581,7 +5581,7 @@ var import_endpoint = __nccwpck_require__(9440);
 var import_universal_user_agent = __nccwpck_require__(5030);
 
 // pkg/dist-src/version.js
-var VERSION = "8.2.0";
+var VERSION = "8.4.0";
 
 // pkg/dist-src/is-plain-object.js
 function isPlainObject(value) {
@@ -5606,7 +5606,7 @@ function getBufferResponse(response) {
 
 // pkg/dist-src/fetch-wrapper.js
 function fetchWrapper(requestOptions) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d;
   const log = requestOptions.request && requestOptions.request.log ? requestOptions.request.log : console;
   const parseSuccessResponseBody = ((_a = requestOptions.request) == null ? void 0 : _a.parseSuccessResponseBody) !== false;
   if (isPlainObject(requestOptions.body) || Array.isArray(requestOptions.body)) {
@@ -5627,8 +5627,9 @@ function fetchWrapper(requestOptions) {
   return fetch(requestOptions.url, {
     method: requestOptions.method,
     body: requestOptions.body,
+    redirect: (_c = requestOptions.request) == null ? void 0 : _c.redirect,
     headers: requestOptions.headers,
-    signal: (_c = requestOptions.request) == null ? void 0 : _c.signal,
+    signal: (_d = requestOptions.request) == null ? void 0 : _d.signal,
     // duplex must be set if request.body is ReadableStream or Async Iterables.
     // See https://fetch.spec.whatwg.org/#dom-requestinit-duplex.
     ...requestOptions.body && { duplex: "half" }
@@ -31763,6 +31764,7 @@ async function checkBranch(octokit, context, branchName) {
 
     return true
   } catch (error) {
+    core.debug(`checkBranch() error.status: ${error.status}`)
     // Create the lock branch if it doesn't exist
     if (error.status === 404) {
       return false
@@ -32075,7 +32077,15 @@ async function unlock(
     }
   } catch (error) {
     // The the error caught was a 422 - Reference does not exist, this is OK - It means the lock branch does not exist
-    if (error.status === 422 && error.message === 'Reference does not exist') {
+
+    // debug the error msg
+    core.debug(`unlock() error.status: ${error.status}`)
+    core.debug(`unlock() error.message: ${error.message}`)
+
+    if (
+      error.status === 422 &&
+      error.message.startsWith('Reference does not exist')
+    ) {
       // If headless, exit here
       if (headless) {
         core.info('no deployment lock currently set - headless')
@@ -32126,6 +32136,7 @@ async function checkLockFile_checkLockFile(octokit, context, branch) {
       branch: branch
     })
   } catch (error) {
+    core.debug(`checkLockFile() error.status: ${error.status}`)
     // If the lock file doesn't exist, return
     if (error.status === 404) {
       return false
