@@ -31764,6 +31764,7 @@ async function checkBranch(octokit, context, branchName) {
 
     return true
   } catch (error) {
+    core.debug(`checkBranch() error.status: ${error.status}`)
     // Create the lock branch if it doesn't exist
     if (error.status === 404) {
       return false
@@ -32076,7 +32077,15 @@ async function unlock(
     }
   } catch (error) {
     // The the error caught was a 422 - Reference does not exist, this is OK - It means the lock branch does not exist
-    if (error.status === 422 && error.message === 'Reference does not exist') {
+
+    // debug the error msg
+    core.debug(`unlock() error.status: ${error.status}`)
+    core.debug(`unlock() error.message: ${error.message}`)
+
+    if (
+      error.status === 422 &&
+      error.message.startsWith('Reference does not exist')
+    ) {
       // If headless, exit here
       if (headless) {
         core.info('no deployment lock currently set - headless')
@@ -32127,6 +32136,7 @@ async function checkLockFile_checkLockFile(octokit, context, branch) {
       branch: branch
     })
   } catch (error) {
+    core.debug(`checkLockFile() error.status: ${error.status}`)
     // If the lock file doesn't exist, return
     if (error.status === 404) {
       return false
