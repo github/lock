@@ -395,6 +395,7 @@ async function checkBranch(octokit, context, branchName) {
 
     return true
   } catch (error) {
+    core.debug(`checkBranch() error.status: ${error.status}`)
     // Create the lock branch if it doesn't exist
     if (error.status === 404) {
       return false

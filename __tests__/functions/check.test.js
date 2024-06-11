@@ -20,6 +20,7 @@ beforeEach(() => {
   jest.spyOn(core, 'warning').mockImplementation(() => {})
   jest.spyOn(core, 'info').mockImplementation(() => {})
   jest.spyOn(core, 'setOutput').mockImplementation(() => {})
+  jest.spyOn(core, 'debug').mockImplementation(() => {})
 })
 
 const lockBase64Octocat =
