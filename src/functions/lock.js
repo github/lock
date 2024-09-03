@@ -3,6 +3,7 @@ import dedent from 'dedent-js'
 import {actionStatus} from './action-status'
 import {timeDiff} from './time-diff'
 import {LOCK_METADATA} from './lock-metadata'
+import {constructValidBranchName} from './valid-branch-name'
 
 // Constants for the lock file
 const LOCK_BRANCH_SUFFIX = LOCK_METADATA.lockBranchSuffix
@@ -128,7 +129,7 @@ async function constructBranchName(environment, global) {
   }
 
   // If the lock is not global, return the environment-specific lock branch name
-  return `${environment}-${LOCK_BRANCH_SUFFIX}`
+  return `${constructValidBranchName(environment)}-${LOCK_BRANCH_SUFFIX}`
 }
 
 // Helper function to construct the unlock command
@@ -447,8 +448,8 @@ export async function lock(
   // find the global flag for returning
   const globalFlag = core.getInput('global_lock_flag').trim()
 
-  // construct the lock branch name
-  const branchName = `${environment}-${LOCK_BRANCH_SUFFIX}`
+  // construct the branch name for the lock
+  const branchName = await constructBranchName(environment, global)
 
   // lock debug info
   core.debug(`detected lock env: ${environment}`)

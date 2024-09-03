@@ -12,6 +12,7 @@ import {environmentTargets} from './functions/environment-targets'
 import * as github from '@actions/github'
 import {context} from '@actions/github'
 import dedent from 'dedent-js'
+import {constructValidBranchName} from './functions/valid-branch-name'
 
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 export async function run() {
@@ -157,7 +158,7 @@ export async function run() {
         // special comment for global deploy locks
         let globalMsg = ''
         let environmentMsg = `- __Environment__: \`${lockData.environment}\``
-        let lockBranchName = `${lockData.environment}-${LOCK_METADATA.lockBranchSuffix}`
+        let lockBranchName = `${constructValidBranchName(lockData.environment)}-${LOCK_METADATA.lockBranchSuffix}`
         if (lockData.global === true) {
           globalMsg = dedent(`
 
