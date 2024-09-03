@@ -32230,6 +32230,7 @@ async function checkLockFile_checkLockFile(octokit, context, branch) {
 
 
 
+
 // Helper function for checking if a deployment lock exists
 // :param octokit: The octokit client
 // :param context: The GitHub Actions event context
@@ -32262,7 +32263,7 @@ async function check(octokit, context, environment) {
   }
 
   // if a global lock does not exist, check if a lock exists for the environment
-  const lockBranch = `${environment}-${LOCK_METADATA.lockBranchSuffix}`
+  const lockBranch = `${constructValidBranchName(environment)}-${LOCK_METADATA.lockBranchSuffix}`
   const environmentLockExists = await checkLockFile_checkLockFile(
     octokit,
     context,

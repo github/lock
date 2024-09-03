@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {LOCK_METADATA} from './lock-metadata'
 import {checkLockFile} from './checkLockFile'
+import {constructValidBranchName} from './valid-branch-name'
 
 // Helper function for checking if a deployment lock exists
 // :param octokit: The octokit client
@@ -34,7 +35,7 @@ export async function check(octokit, context, environment) {
   }
 
   // if a global lock does not exist, check if a lock exists for the environment
-  const lockBranch = `${environment}-${LOCK_METADATA.lockBranchSuffix}`
+  const lockBranch = `${constructValidBranchName(environment)}-${LOCK_METADATA.lockBranchSuffix}`
   const environmentLockExists = await checkLockFile(
     octokit,
     context,
