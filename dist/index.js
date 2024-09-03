@@ -31366,7 +31366,30 @@ const LOCK_METADATA = {
   lockFile: 'lock.json'
 }
 
+;// CONCATENATED MODULE: ./src/functions/valid-branch-name.js
+
+
+// Helper function to create a valid branch name that will pass GitHub's API ref validation
+// :param branch: The branch name
+// :returns: A string of the branch name with proper formatting
+function constructValidBranchName(branch) {
+  core.debug(`constructing valid branch name: ${branch}`)
+
+  if (branch === null) {
+    return null
+  } else if (branch === undefined) {
+    return undefined
+  }
+
+  // If environment contains any spaces, replace all of them with a hyphen
+  branch = branch.replace(/\s/g, '-')
+
+  core.debug(`constructed valid branch name: ${branch}`)
+  return branch
+}
+
 ;// CONCATENATED MODULE: ./src/functions/lock.js
+
 
 
 
@@ -31497,7 +31520,7 @@ async function constructBranchName(environment, global) {
   }
 
   // If the lock is not global, return the environment-specific lock branch name
-  return `${environment}-${LOCK_BRANCH_SUFFIX}`
+  return `${constructValidBranchName(environment)}-${LOCK_BRANCH_SUFFIX}`
 }
 
 // Helper function to construct the unlock command
@@ -31816,8 +31839,8 @@ async function lock(
   // find the global flag for returning
   const globalFlag = core.getInput('global_lock_flag').trim()
 
-  // construct the lock branch name
-  const branchName = `${environment}-${LOCK_BRANCH_SUFFIX}`
+  // construct the branch name for the lock
+  const branchName = await constructBranchName(environment, global)
 
   // lock debug info
   core.debug(`detected lock env: ${environment}`)
@@ -31991,6 +32014,7 @@ async function lock(
 
 
 
+
 // Constants for the lock file
 const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
 
@@ -32023,7 +32047,7 @@ async function unlock(
     // Delete the lock branch
     const result = await octokit.rest.git.deleteRef({
       ...context.repo,
-      ref: `heads/${environment}-${LOCK_BRANCH}`
+      ref: `heads/${constructValidBranchName(environment)}-${LOCK_BRANCH}`
     })
 
     // If the lock was successfully released, return true
@@ -32036,7 +32060,7 @@ async function unlock(
       }
 
       // construct the branch name and success message text
-      const branchName = `${environment}-${LOCK_BRANCH}`
+      const branchName = `${constructValidBranchName(environment)}-${LOCK_BRANCH}`
       var successText = ''
       if (global === true) {
         successText = '`global`'
@@ -32064,7 +32088,7 @@ async function unlock(
       return true
     } else {
       // If the lock was not successfully released, return false and log the HTTP code
-      const comment = `failed to delete lock branch: ${environment}-${LOCK_BRANCH} - HTTP: ${result.status}`
+      const comment = `failed to delete lock branch: ${constructValidBranchName(environment)}-${LOCK_BRANCH} - HTTP: ${result.status}`
       core.info(comment)
 
       // If headless, exit here
@@ -32123,12 +32147,15 @@ async function unlock(
 
 
 
+
 // Helper function to check if a lock branch + lock file exists
 // :param octokit: The authenticated octokit instance
 // :param context: The github context
 // :param branch: The branch to check for a lock file
 // :returns: True if the lock file exists, false otherwise
 async function checkLockFile_checkLockFile(octokit, context, branch) {
+  branch = constructValidBranchName(branch)
+
   try {
     // try to get the lock branch
     await octokit.rest.repos.getBranch({
@@ -32203,6 +32230,7 @@ async function checkLockFile_checkLockFile(octokit, context, branch) {
 
 
 
+
 // Helper function for checking if a deployment lock exists
 // :param octokit: The octokit client
 // :param context: The GitHub Actions event context
@@ -32235,7 +32263,7 @@ async function check(octokit, context, environment) {
   }
 
   // if a global lock does not exist, check if a lock exists for the environment
-  const lockBranch = `${environment}-${LOCK_METADATA.lockBranchSuffix}`
+  const lockBranch = `${constructValidBranchName(environment)}-${LOCK_METADATA.lockBranchSuffix}`
   const environmentLockExists = await checkLockFile_checkLockFile(
     octokit,
     context,
@@ -32403,6 +32431,7 @@ var github = __nccwpck_require__(5438);
 
 
 
+
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 async function run() {
   try {
@@ -32547,7 +32576,7 @@ async function run() {
         // special comment for global deploy locks
         let globalMsg = ''
         let environmentMsg = `- __Environment__: \`${lockData.environment}\``
-        let lockBranchName = `${lockData.environment}-${LOCK_METADATA.lockBranchSuffix}`
+        let lockBranchName = `${constructValidBranchName(lockData.environment)}-${LOCK_METADATA.lockBranchSuffix}`
         if (lockData.global === true) {
           globalMsg = lib_default()(`
 

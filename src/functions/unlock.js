@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import {actionStatus} from './action-status'
 import {LOCK_METADATA} from './lock-metadata'
 import dedent from 'dedent-js'
+import {constructValidBranchName} from './valid-branch-name'
 
 // Constants for the lock file
 const LOCK_BRANCH = LOCK_METADATA.lockBranchSuffix
@@ -35,7 +36,7 @@ export async function unlock(
     // Delete the lock branch
     const result = await octokit.rest.git.deleteRef({
       ...context.repo,
-      ref: `heads/${environment}-${LOCK_BRANCH}`
+      ref: `heads/${constructValidBranchName(environment)}-${LOCK_BRANCH}`
     })
 
     // If the lock was successfully released, return true
@@ -48,7 +49,7 @@ export async function unlock(
       }
 
       // construct the branch name and success message text
-      const branchName = `${environment}-${LOCK_BRANCH}`
+      const branchName = `${constructValidBranchName(environment)}-${LOCK_BRANCH}`
       var successText = ''
       if (global === true) {
         successText = '`global`'
@@ -76,7 +77,7 @@ export async function unlock(
       return true
     } else {
       // If the lock was not successfully released, return false and log the HTTP code
-      const comment = `failed to delete lock branch: ${environment}-${LOCK_BRANCH} - HTTP: ${result.status}`
+      const comment = `failed to delete lock branch: ${constructValidBranchName(environment)}-${LOCK_BRANCH} - HTTP: ${result.status}`
       core.info(comment)
 
       // If headless, exit here
