@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.24.8",
-    "@types/node": "^22.5.1",
+    "@types/node": "^22.13.16",
     "@vercel/ncc": "^0.38.1",
     "eslint": "^8.57.0",
     "eslint-plugin-jest": "^28.8.1",
