@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Need to checkout for testing the Action in this repo
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Lock or Unlock via a comment (ex: .lock or .unlock)
       - uses: ./
