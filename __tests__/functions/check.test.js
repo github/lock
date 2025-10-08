@@ -86,12 +86,12 @@ test('successfully checks for a production lock and does not find a lock branch'
 })
 
 test('successfully checks for a production lock and finds a global lock instead', async () => {
-  ;(octokit.rest.repos.getBranch = jest
+  ;((octokit.rest.repos.getBranch = jest
     .fn()
     .mockReturnValueOnce({data: {commit: {sha: 'cba123'}}})), // global lock
     (octokit.rest.getContent = jest
       .fn()
-      .mockReturnValue({data: {content: lockBase64OctocatGlobal}}))
+      .mockReturnValue({data: {content: lockBase64OctocatGlobal}})))
   expect(await check(octokit, context, environment)).toBe(true)
   expect(setOutputMock).toHaveBeenCalledWith('locked', 'true')
   expect(setOutputMock).toHaveBeenCalledWith('lock_environment', 'global')
@@ -112,10 +112,10 @@ test('successfully checks for a production lock and finds a global lock instead'
 })
 
 test('successfully checks for a global lock and does not find one', async () => {
-  ;(octokit.rest.repos.getBranch = jest
+  ;((octokit.rest.repos.getBranch = jest
     .fn()
     .mockRejectedValueOnce(new NotFoundError('Reference does not exist'))), // global lock
-    expect(await check(octokit, context, 'global')).toBe(false)
+    expect(await check(octokit, context, 'global')).toBe(false))
   expect(setOutputMock).toHaveBeenCalledWith('locked', 'false')
   expect(infoMock).toHaveBeenCalledWith('global lock does not exist')
 })
