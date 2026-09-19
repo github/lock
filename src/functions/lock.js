@@ -4,6 +4,7 @@ import {actionStatus} from './action-status'
 import {timeDiff} from './time-diff'
 import {LOCK_METADATA} from './lock-metadata'
 import {constructValidBranchName} from './valid-branch-name'
+import {formatLockReason} from './format-lock-reason'
 
 // Constants for the lock file
 const LOCK_BRANCH_SUFFIX = LOCK_METADATA.lockBranchSuffix
@@ -297,7 +298,7 @@ async function checkLockOwner(
   // dynamic reason text
   let reasonText = ''
   if (lockData.reason) {
-    reasonText = `- __Reason__: \`${lockData.reason}\``
+    reasonText = formatLockReason(lockData.reason)
   }
 
   // dynamic lock text
@@ -316,14 +317,15 @@ async function checkLockOwner(
   }
 
   // Construct the comment to add to the issue, alerting that the lock is already claimed
-  const comment = dedent(`
+  const commentHeader = dedent(`
   ### ⚠️ Cannot ${header}
 
   Sorry __${context.actor}__, ${lockText}
 
   #### Lock Details 🔒
+  `)
 
-  ${reasonText}
+  const commentDetails = dedent(`
   ${environmentText}
   - __Branch__: \`${lockData.branch}\`
   - __Created At__: \`${lockData.created_at}\`
@@ -337,6 +339,9 @@ async function checkLockOwner(
 
   > If you need to release the lock, please comment \`${lockData.unlock_command}\`
   `)
+  const comment = [commentHeader, reasonText, commentDetails]
+    .filter(Boolean)
+    .join('\n\n')
 
   // Set the action status with the comment if we are not in headless mode
   if (headless === false) {

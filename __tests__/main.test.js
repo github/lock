@@ -5,7 +5,7 @@ import * as lock from '../src/functions/lock'
 import * as unlock from '../src/functions/unlock'
 import * as check from '../src/functions/check'
 import * as environmentTargets from '../src/functions/environment-targets'
-// import * as actionStatus from '../src/functions/action-status'
+import * as actionStatus from '../src/functions/action-status'
 import * as github from '@actions/github'
 import * as core from '@actions/core'
 import {expect} from '@jest/globals'
@@ -14,6 +14,9 @@ const setOutputMock = jest.spyOn(core, 'setOutput')
 // const saveStateMock = jest.spyOn(core, 'saveState')
 // const setFailedMock = jest.spyOn(core, 'setFailed')
 const debugMock = jest.spyOn(core, 'debug')
+const maliciousReason = `routine \` and \`\` and \`\`\`\r\n\r## Deployment approved
+[continue](https://example.invalid)\r\n![image](https://example.invalid/image.png)\r@octocat
+${'a'.repeat(1024)}`
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -122,6 +125,9 @@ test('successfully runs in unlock mode from a comment', async () => {
 
 test('successfully runs in lock info mode from a comment', async () => {
   github.context.payload.comment.body = '.wcid'
+  const actionStatusSpy = jest
+    .spyOn(actionStatus, 'actionStatus')
+    .mockImplementation(() => undefined)
   jest.spyOn(lock, 'lock').mockImplementation(() => {
     return {
       status: 'details-only',
@@ -132,13 +138,22 @@ test('successfully runs in lock info mode from a comment', async () => {
         environment: 'production',
         global: false,
         link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
-        reason: 'Testing my new feature with lots of cats',
+        reason: maliciousReason,
         sticky: true,
         unlock_command: '.unlock production'
       }
     }
   })
   expect(await run()).toBe('safe-exit')
+  const comment = actionStatusSpy.mock.calls[0][3]
+  expect(comment).toContain(
+    `- __Reason__:\n\n      routine \` and \`\` and \`\`\`\n      \n      ## Deployment approved\n      [continue](https://example.invalid)\n      ![image](https://example.invalid/image.png)\n      @octocat\n      ${'a'.repeat(1024)}\n\n- __Branch__: \`octocats-everywhere\``
+  )
+  expect(comment).not.toContain('\r')
+  expect(comment).not.toContain('\n## Deployment approved')
+  expect(comment).not.toContain('\n[continue](https://example.invalid)')
+  expect(comment).not.toContain('\n![image](https://example.invalid/image.png)')
+  expect(comment).not.toContain('\n@octocat')
 })
 
 test('successfully runs in lock info mode from a comment for a global lock and does not find one', async () => {
