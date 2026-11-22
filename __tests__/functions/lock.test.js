@@ -17,6 +17,9 @@ class BigBadError extends Error {
 }
 
 const environment = 'production'
+const maliciousReason = `routine \` and \`\` and \`\`\`\r\n\r## Deployment approved
+[continue](https://example.invalid)\r\n![image](https://example.invalid/image.png)\r@octocat
+${'a'.repeat(1024)}`
 
 const lockBase64Monalisa =
   'ewogICAgInJlYXNvbiI6IG51bGwsCiAgICAiYnJhbmNoIjogImNvb2wtbmV3LWZlYXR1cmUiLAogICAgImNyZWF0ZWRfYXQiOiAiMjAyMi0wNi0xNVQyMToxMjoxNC4wNDFaIiwKICAgICJjcmVhdGVkX2J5IjogIm1vbmFsaXNhIiwKICAgICJzdGlja3kiOiBmYWxzZSwKICAgICJlbnZpcm9ubWVudCI6ICJwcm9kdWN0aW9uIiwKICAgICJ1bmxvY2tfY29tbWFuZCI6ICIudW5sb2NrIHByb2R1Y3Rpb24iLAogICAgImdsb2JhbCI6IGZhbHNlLAogICAgImxpbmsiOiAiaHR0cHM6Ly9naXRodWIuY29tL3Rlc3Qtb3JnL3Rlc3QtcmVwby9wdWxsLzMjaXNzdWVjb21tZW50LTEyMyIKfQo='
@@ -289,6 +292,52 @@ test('Determines that another user has the lock and exits - during a direct lock
   expect(setFailedMock).toHaveBeenCalledWith(
     expect.stringMatching(/Cannot claim deployment lock/)
   )
+})
+
+test('renders a stored multiline lock reason as inert code when another user encounters the lock', async () => {
+  const lockData = {
+    branch: 'octocats-everywhere',
+    created_at: '2022-06-14T21:12:14.041Z',
+    created_by: 'octocat',
+    environment,
+    global: false,
+    link: 'https://github.com/test-org/test-repo/pull/2#issuecomment-456',
+    reason: maliciousReason,
+    sticky: true,
+    unlock_command: '.unlock production'
+  }
+  const octokit = {
+    rest: {
+      repos: {
+        getBranch: jest
+          .fn()
+          .mockReturnValueOnce({data: {commit: {sha: 'abc123'}}}),
+        get: jest.fn().mockReturnValue({data: {default_branch: 'main'}}),
+        getContent: jest
+          .fn()
+          .mockRejectedValueOnce(new NotFoundError('file not found'))
+          .mockReturnValueOnce({
+            data: {
+              content: Buffer.from(JSON.stringify(lockData)).toString('base64')
+            }
+          })
+      }
+    }
+  }
+
+  expect(
+    await lock(octokit, context, ref, 123, false, environment)
+  ).toMatchObject({status: false, lockData})
+
+  const comment = actionStatusSpy.mock.calls[0][3]
+  expect(comment).toContain(
+    `- __Reason__:\n\n      routine \` and \`\` and \`\`\`\n      \n      ## Deployment approved\n      [continue](https://example.invalid)\n      ![image](https://example.invalid/image.png)\n      @octocat\n      ${'a'.repeat(1024)}\n\n- __Environment__: \`production\``
+  )
+  expect(comment).not.toContain('\r')
+  expect(comment).not.toContain('\n## Deployment approved')
+  expect(comment).not.toContain('\n[continue](https://example.invalid)')
+  expect(comment).not.toContain('\n![image](https://example.invalid/image.png)')
+  expect(comment).not.toContain('\n@octocat')
 })
 
 test('Determines that another user has the lock and exits - headless', async () => {

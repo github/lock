@@ -13,6 +13,7 @@ import * as github from '@actions/github'
 import {context} from '@actions/github'
 import dedent from 'dedent-js'
 import {constructValidBranchName} from './functions/valid-branch-name'
+import {formatLockReason} from './functions/format-lock-reason'
 
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 export async function run() {
@@ -174,12 +175,13 @@ export async function run() {
         }
 
         // Format the lock details message
-        const lockMessage = dedent(`
+        const lockMessageHeader = dedent(`
         ### Lock Details 🔒
 
         The deployment lock is currently claimed by __${lockData.created_by}__${globalMsg}
+        `)
 
-        - __Reason__: \`${lockData.reason}\`
+        const lockMessageDetails = dedent(`
         - __Branch__: \`${lockData.branch}\`
         - __Created At__: \`${lockData.created_at}\`
         - __Created By__: \`${lockData.created_by}\`
@@ -192,6 +194,11 @@ export async function run() {
 
         > If you need to release the lock, please comment \`${lockData.unlock_command}\`
         `)
+        const lockMessage = [
+          lockMessageHeader,
+          formatLockReason(lockData.reason),
+          lockMessageDetails
+        ].join('\n\n')
 
         // Update the issue comment with the lock details
         await actionStatus(

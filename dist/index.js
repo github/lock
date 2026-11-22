@@ -32146,7 +32146,20 @@ function constructValidBranchName(branch) {
   return branch
 }
 
+;// CONCATENATED MODULE: ./src/functions/format-lock-reason.js
+// Format an untrusted lock reason as a Markdown code block nested under a list item.
+function formatLockReason(reason) {
+  const codeBlock = String(reason)
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => `      ${line}`)
+    .join('\n')
+
+  return `- __Reason__:\n\n${codeBlock}`
+}
+
 ;// CONCATENATED MODULE: ./src/functions/lock.js
+
 
 
 
@@ -32446,7 +32459,7 @@ async function checkLockOwner(
   // dynamic reason text
   let reasonText = ''
   if (lockData.reason) {
-    reasonText = `- __Reason__: \`${lockData.reason}\``
+    reasonText = formatLockReason(lockData.reason)
   }
 
   // dynamic lock text
@@ -32465,14 +32478,15 @@ async function checkLockOwner(
   }
 
   // Construct the comment to add to the issue, alerting that the lock is already claimed
-  const comment = lib_default()(`
+  const commentHeader = lib_default()(`
   ### ⚠️ Cannot ${header}
 
   Sorry __${context.actor}__, ${lockText}
 
   #### Lock Details 🔒
+  `)
 
-  ${reasonText}
+  const commentDetails = lib_default()(`
   ${environmentText}
   - __Branch__: \`${lockData.branch}\`
   - __Created At__: \`${lockData.created_at}\`
@@ -32486,6 +32500,9 @@ async function checkLockOwner(
 
   > If you need to release the lock, please comment \`${lockData.unlock_command}\`
   `)
+  const comment = [commentHeader, reasonText, commentDetails]
+    .filter(Boolean)
+    .join('\n\n')
 
   // Set the action status with the comment if we are not in headless mode
   if (headless === false) {
@@ -33190,6 +33207,7 @@ var github = __nccwpck_require__(3228);
 
 
 
+
 // :returns: 'success', 'success - noop', 'failure', 'safe-exit', or raises an error
 async function run() {
   try {
@@ -33350,12 +33368,13 @@ async function run() {
         }
 
         // Format the lock details message
-        const lockMessage = lib_default()(`
+        const lockMessageHeader = lib_default()(`
         ### Lock Details 🔒
 
         The deployment lock is currently claimed by __${lockData.created_by}__${globalMsg}
+        `)
 
-        - __Reason__: \`${lockData.reason}\`
+        const lockMessageDetails = lib_default()(`
         - __Branch__: \`${lockData.branch}\`
         - __Created At__: \`${lockData.created_at}\`
         - __Created By__: \`${lockData.created_by}\`
@@ -33368,6 +33387,11 @@ async function run() {
 
         > If you need to release the lock, please comment \`${lockData.unlock_command}\`
         `)
+        const lockMessage = [
+          lockMessageHeader,
+          formatLockReason(lockData.reason),
+          lockMessageDetails
+        ].join('\n\n')
 
         // Update the issue comment with the lock details
         await actionStatus(
